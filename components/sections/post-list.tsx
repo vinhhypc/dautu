@@ -48,7 +48,7 @@ export function PostGrid({ items, titleTag: TitleTag, columns = 2, showExcerpt =
               </RouteLink>
             </TitleTag>
             {showExcerpt && post.excerpt && <p className="line-clamp-3 text-normal-lg text-text-secondary">{post.excerpt}</p>}
-            <time dateTime={post.dateTime} className="mt-auto text-normal-md text-text-tertiary">
+            <time dateTime={post.dateTime} className="mt-auto text-normal-l text-text-tertiary">
               {post.date}
             </time>
           </Card>

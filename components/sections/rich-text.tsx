@@ -59,7 +59,7 @@ function TableCell({ cell, labels }: { cell: RichTableCell; labels: RichTextLabe
         cell.header ? "bg-background-surface font-semibold text-text-primary" : "text-text-secondary",
       )}
     >
-      <RichText blocks={cell.children} labels={labels} compact className="text-normal-l" />
+      <RichText blocks={cell.children} labels={labels} compact />
     </Tag>
   );
 }
@@ -227,7 +227,7 @@ export function RichText({ blocks, labels, compact = false, wide = false, classN
       className={cn(
         "flex min-w-0 flex-col",
         wide ? "text-text-primary" : "text-text-secondary",
-        compact ? "gap-8 text-normal-md" : "gap-16 text-normal-lg",
+        compact ? "gap-8 text-normal-l" : "gap-16 text-normal-lg",
         /* ds-one không có leading-relaxed/normal — chỉ có bậc px; đặt sau cỡ chữ vì tailwind-merge bỏ leading-* đứng trước text-normal-*. */
         wide && "leading-24",
         className,

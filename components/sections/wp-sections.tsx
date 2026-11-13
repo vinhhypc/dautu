@@ -334,7 +334,7 @@ export function TestimonialSlider({ items }: { items: WpTestimonial[] }) {
               {item.image && <WpImage image={item.image} sizes="64px" className="size-64 rounded-1000 object-cover" />}
               <span>
                 <span className="block font-semibold text-text-primary">{item.name}</span>
-                {item.role && <span className="block text-normal-md text-text-tertiary">{item.role}</span>}
+                {item.role && <span className="block text-normal-l text-text-tertiary">{item.role}</span>}
               </span>
             </figcaption>
           </figure>
@@ -489,7 +489,7 @@ function SingleWidget({ widget, labels }: { widget: WpWidget; labels: WpSectionL
                   {post.title}
                 </RouteLink>
               </h3>
-              {post.excerpt && <p className="text-normal-md text-text-secondary">{post.excerpt}</p>}
+              {post.excerpt && <p className="text-normal-l text-text-secondary">{post.excerpt}</p>}
             </Card>
           ))}
         </div>

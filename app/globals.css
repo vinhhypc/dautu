@@ -1,0 +1,341 @@
+@import "tailwindcss";
+@source "../vendor/ds-one";
+@import "../vendor/ds-one/tokens/index.css";
+@import "./fonts.css";
+
+@theme inline {
+  --font-sans: var(--font-ibm-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: var(--font-ibm-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@theme {
+  /* --spacing: 1px để giá trị ngoài token (size-200, max-w-1440) cũng tính theo px. */
+  --spacing: 1px;
+
+  --shadow-soft: 0 2px 8px 0 rgb(0 0 0 / 0.04), 0 8px 32px 0 rgb(0 0 0 / 0.06);
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: var(--ease-standard);
+}
+
+:root {
+  --duration: var(--default-transition-duration);
+  --easing: var(--ease-standard);
+  --header-height: calc(var(--spacing) * 64);
+}
+
+@utility bg-hero-scrim {
+  background-image: linear-gradient(to bottom, rgb(13 13 13 / 0.35) 0%, rgb(13 13 13 / 0.05) 45%, rgb(13 13 13 / 0.25) 100%);
+}
+@utility bg-hero-scrim-lg {
+  background-image: linear-gradient(to bottom, rgb(13 13 13 / 0.35) 0%, rgb(13 13 13 / 0.05) 45%, rgb(13 13 13 / 0.35) 100%);
+}
+
+@utility icon-mask {
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+@utility icon-arrow-right {
+  mask-image: url("/icons/arrow-right.svg");
+}
+@utility icon-chevron-down {
+  mask-image: url("/icons/chevron-down.svg");
+}
+@utility icon-menu {
+  mask-image: url("/icons/menu.svg");
+}
+@utility icon-more {
+  mask-image: url("/icons/more.svg");
+}
+@utility icon-close {
+  mask-image: url("/icons/close.svg");
+}
+@utility icon-arrow-right-up {
+  mask-image: url("/icons/arrow-right-up.svg");
+}
+@utility icon-external-link {
+  mask-image: url("/icons/external-link.svg");
+}
+@utility icon-check {
+  mask-image: url("/icons/check.svg");
+}
+@utility icon-facebook {
+  mask-image: url("/icons/facebook.svg");
+}
+@utility icon-youtube {
+  mask-image: url("/icons/youtube.svg");
+}
+@utility icon-linkedin {
+  mask-image: url("/icons/linkedin.svg");
+}
+@utility icon-tiktok {
+  mask-image: url("/icons/tiktok.svg");
+}
+
+@utility interactive-lift {
+  transition-property: transform, box-shadow, background-color, color, border-color;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+
+  &:hover {
+    transform: translateY(calc(var(--spacing) * -2));
+    box-shadow: var(--shadow-lg);
+  }
+  &:active {
+    transform: scale(0.97);
+    box-shadow: var(--shadow-sm);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+  &:disabled,
+  &[aria-disabled="true"] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0ms;
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+@utility hover-rise {
+  transition-property: transform, box-shadow;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+
+  &:hover {
+    transform: translateY(calc(var(--spacing) * -4));
+    box-shadow: var(--shadow-md);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0ms;
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+@utility link-text {
+  color: var(--color-brand-primary);
+  text-underline-offset: 0.2em;
+  transition: color var(--duration) var(--easing);
+
+  &:hover {
+    color: var(--color-brand-primary-hover);
+    text-decoration-line: underline;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-4);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0ms;
+  }
+}
+
+@layer base {
+  /* Tailwind 4 để nút mặc định cursor: default — trả lại con trỏ tay cho mọi thứ bấm được (nav, dropdown, accordion…). */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="menuitem"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  html {
+    scroll-padding-top: var(--header-height);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-background-base);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Gradient rộng 350% của CẢ DÒNG (không phải từng đoạn màu) để vệt quét chạy liền qua các màu. */
+[data-sweep]:not([data-sweep-state]) {
+  opacity: 0;
+}
+[data-sweep-fade] {
+  opacity: 0;
+  transition: opacity 1200ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+[data-sweep-entered] [data-sweep-fade] {
+  opacity: 1;
+}
+.sweep-line {
+  --sweep-progress: 30;
+  position: relative;
+  display: block;
+  width: fit-content;
+  white-space: pre;
+}
+.sweep-run {
+  display: inline-block;
+  /* Nới vùng tô để không cắt dấu tiếng Việt xếp chồng (ẫ, ặ, ỗ...). */
+  padding-block: 0.2em;
+  margin-block: -0.2em;
+  color: transparent;
+  background-image: linear-gradient(
+    90deg,
+    var(--sweep-final) 0%,
+    var(--sweep-final) 30%,
+    var(--sweep-color, var(--color-brand-primary)) 40%,
+    transparent 50%,
+    transparent 100%
+  );
+  background-repeat: no-repeat;
+  background-size: calc(var(--sweep-line-w) * 3.5) 100%;
+  background-position-x: calc((100 - var(--sweep-progress)) * var(--sweep-line-w) * -0.025 - var(--sweep-run-x));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+@utility sweep-neutral {
+  --sweep-color: var(--color-text-primary);
+}
+@media (scripting: none), (prefers-reduced-motion: reduce) {
+  [data-sweep]:not([data-sweep-state]),
+  [data-sweep-fade] {
+    opacity: 1;
+  }
+}
+
+.footer-group {
+  interpolate-size: allow-keywords;
+}
+/* Độ mờ đặt trên ::details-content: nội dung bên trong bị content-visibility: hidden khi đóng nên không transition được. */
+.faq-item::details-content,
+.footer-group::details-content {
+  block-size: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    block-size 300ms var(--easing),
+    opacity 300ms var(--easing),
+    content-visibility 300ms allow-discrete;
+}
+.faq-item[open]::details-content,
+.footer-group[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+
+/* Chỉ đổi opacity: transform sẽ phá position: fixed của menu mobile bên trong. Không dùng cho logo, h1, ảnh LCP. */
+@utility intro-fade {
+  animation: intro-fade 600ms var(--easing) 200ms both;
+}
+@utility intro-fade-up {
+  animation: intro-fade-up 800ms var(--easing) 700ms both;
+}
+@keyframes intro-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes intro-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-fade,
+  .intro-fade-up {
+    animation: none;
+  }
+}
+
+/* Chỉ transform, không đổi opacity → không trễ LCP. */
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.04);
+  }
+}
+@utility hero-zoom {
+  animation: hero-zoom 1600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-zoom {
+    animation: none;
+  }
+}
+
+/* Chỉ transform, không đổi opacity → h1 có mặt ngay từ lần vẽ đầu. */
+@keyframes hero-line-up {
+  from {
+    transform: translateY(110%);
+  }
+}
+.hero-line {
+  display: block;
+  overflow: hidden;
+  /* Nới khung che để không cắt dấu tiếng Việt (ẫ, ặ, ỗ...). */
+  padding-block: 0.12em;
+  margin-block: -0.12em;
+}
+.hero-line > span {
+  display: block;
+  animation: hero-line-up 900ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+}
+.hero-line:nth-child(2) > span {
+  animation-delay: 270ms;
+}
+.hero-line:nth-child(3) > span {
+  animation-delay: 390ms;
+}
+@utility hero-rise {
+  animation: intro-fade-up 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@utility hero-rise-eyebrow {
+  animation-delay: 50ms;
+}
+@utility hero-rise-body {
+  animation-delay: 450ms;
+}
+@utility hero-rise-cta {
+  animation-delay: 570ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-line > span,
+  .hero-rise {
+    animation: none;
+  }
+}

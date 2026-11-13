@@ -1,0 +1,251 @@
+import type { ReactNode } from "react";
+
+import { cn } from "@/lib/cn";
+import { widthFractionClass } from "@/lib/fraction";
+import type { RichBlock, RichInline, RichTableCell, RichTextLabels } from "@/types/content";
+
+import { ButtonLink } from "../ui/button";
+import { Disclosure } from "../ui/disclosure";
+import { RouteLink } from "../ui/route-link";
+
+/* Chiều cao iframe theo thuộc tính height của WP → bậc gần nhất. */
+function embedHeight(height?: number) {
+  if (!height) return "h-720";
+  if (height <= 260) return "h-240";
+  if (height <= 420) return "h-400";
+  if (height <= 600) return "h-560";
+  return "h-720";
+}
+
+function Inlines({ items }: { items: RichInline[] }) {
+  return items.map((item, index) => <InlineNode key={index} item={item} />);
+}
+
+function InlineNode({ item }: { item: RichInline }): ReactNode {
+  switch (item.type) {
+    case "text":
+      return item.value;
+    case "break":
+      return <br />;
+    case "strong":
+      return (
+        <strong className="font-semibold text-text-primary">
+          <Inlines items={item.children} />
+        </strong>
+      );
+    case "em":
+      return (
+        <em>
+          <Inlines items={item.children} />
+        </em>
+      );
+    case "link":
+      return (
+        <RouteLink href={item.href} className="link-text break-words">
+          <Inlines items={item.children} />
+        </RouteLink>
+      );
+  }
+}
+
+function TableCell({ cell, labels }: { cell: RichTableCell; labels: RichTextLabels }) {
+  const Tag = cell.header ? "th" : "td";
+  return (
+    <Tag
+      colSpan={cell.colSpan}
+      rowSpan={cell.rowSpan}
+      className={cn(
+        "border border-border-subtle px-16 py-12 text-left align-top",
+        cell.header ? "bg-background-surface font-semibold text-text-primary" : "text-text-secondary",
+      )}
+    >
+      <RichText blocks={cell.children} labels={labels} compact className="text-normal-l" />
+    </Tag>
+  );
+}
+
+type ImageBlock = Extract<RichBlock, { type: "image" }>;
+
+/* Icon nhỏ (width ≤ 1/3) đứng liền nhau — vd. SoundCloud/YouTube/Facebook trong cùng đoạn — hiển thị cùng một hàng như WordPress. */
+function groupImageRows(blocks: RichBlock[]): (RichBlock | ImageBlock[])[] {
+  const result: (RichBlock | ImageBlock[])[] = [];
+  for (const block of blocks) {
+    const isIcon = block.type === "image" && block.scale !== undefined && block.scale <= 1 / 3;
+    const last = result.at(-1);
+    if (isIcon && Array.isArray(last)) last.push(block as ImageBlock);
+    else if (isIcon) result.push([block as ImageBlock]);
+    else result.push(block);
+  }
+  return result.map((group) => (Array.isArray(group) && group.length === 1 ? group[0] : group));
+}
+
+const SMALL_ICON_SCALE = 0.15;
+
+function isSmallIcon(block: ImageBlock): boolean {
+  return (block.scale ?? 0) <= SMALL_ICON_SCALE;
+}
+
+const ALIGN = { center: "self-center text-center", right: "self-end text-right" } as const;
+
+type BlockProps = { block: RichBlock; compact: boolean; wide: boolean; labels: RichTextLabels };
+
+function Block({ block, compact, wide, labels }: BlockProps): ReactNode {
+  switch (block.type) {
+    case "heading": {
+      const Tag = `h${block.level}` as const;
+      return (
+        <Tag
+          id={block.id}
+          className={cn(
+            "scroll-mt-96 font-semibold text-text-primary",
+            block.align && ALIGN[block.align],
+            block.level === 2 && "mt-16 text-large-sm md:text-large-md",
+            block.level === 3 && "mt-8 text-normal-xl",
+            block.level === 4 && "text-normal-lg",
+          )}
+        >
+          <Inlines items={block.children} />
+        </Tag>
+      );
+    }
+    case "paragraph":
+      return (
+        <p className={cn(!compact && !wide && "max-w-prose", block.align && ALIGN[block.align])}>
+          <Inlines items={block.children} />
+        </p>
+      );
+    case "list": {
+      const Tag = block.ordered ? "ol" : "ul";
+      return (
+        <Tag
+          start={block.start}
+          className={cn("flex flex-col gap-8 pl-24", block.ordered ? "list-decimal" : "list-disc", "marker:text-brand-primary")}
+        >
+          {block.items.map((item, index) => (
+            <li key={index} className="pl-4">
+              <RichText blocks={item} labels={labels} wide={wide} className="gap-8" />
+            </li>
+          ))}
+        </Tag>
+      );
+    }
+    case "table":
+      return (
+        <div className="max-w-full overflow-x-auto rounded-8 border border-border-subtle">
+          <table className="w-full border-collapse text-normal-l">
+            <tbody>
+              {block.rows.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, cellIndex) => (
+                    <TableCell key={cellIndex} cell={cell} labels={labels} />
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    case "image": {
+      const image = (
+        // eslint-disable-next-line @next/next/no-img-element -- ảnh trong nội dung WordPress giữ link gốc, không biết trước kích thước (ngoại lệ K6, docs/research/site/migration-plan.md).
+        <img
+          src={block.src}
+          alt={block.alt}
+          width={block.width}
+          height={block.height}
+          loading="lazy"
+          decoding="async"
+          className={cn("h-auto max-w-full rounded-8", block.scale && !block.href && widthFractionClass(block.scale))}
+        />
+      );
+      return block.href ? (
+        <RouteLink
+          href={block.href}
+          className={cn("block rounded-8 transition-opacity hover:opacity-90", block.scale && widthFractionClass(block.scale))}
+        >
+          {image}
+        </RouteLink>
+      ) : (
+        image
+      );
+    }
+    case "video":
+      return (
+        <div className="relative aspect-video w-full max-w-720 overflow-hidden rounded-12 bg-background-inverse">
+          <iframe
+            src={block.src}
+            title={block.title}
+            loading="lazy"
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 size-full"
+          />
+        </div>
+      );
+    case "embed":
+      return (
+        <iframe
+          src={block.src}
+          title={block.title}
+          loading="lazy"
+          className={cn("w-full rounded-12 border border-border-subtle bg-background-base", !block.wide && "max-w-720", embedHeight(block.height))}
+        />
+      );
+    case "disclosure":
+      return (
+        <Disclosure id={block.id} title={<Inlines items={block.title} />}>
+          <RichText blocks={block.children} labels={labels} wide={wide} />
+        </Disclosure>
+      );
+    case "pdf":
+      /* static-02 gửi X-Frame-Options: SAMEORIGIN nên không nhúng xem trong trang được — mở PDF ở tab mới. */
+      return (
+        <div className="flex flex-col gap-16 rounded-12 border border-border-subtle bg-background-surface p-16 sm:flex-row sm:items-center sm:justify-between md:p-24">
+          <p className="min-w-0 break-words text-normal-lg font-medium text-text-primary">{block.title}</p>
+          <ButtonLink href={block.src} variant="primary" trailingIcon="arrow-right-up" className="shrink-0">
+            {labels.openPdf}
+          </ButtonLink>
+        </div>
+      );
+    case "rule":
+      return <hr className="border-border-subtle" />;
+  }
+}
+
+/* wide: nội dung trang WordPress — chữ đậm màu, đoạn văn trải hết cột như trang gốc (không giới hạn max-w-prose). */
+type RichTextProps = {
+  blocks: RichBlock[];
+  labels: RichTextLabels;
+  compact?: boolean;
+  wide?: boolean;
+  className?: string;
+};
+
+export function RichText({ blocks, labels, compact = false, wide = false, className }: RichTextProps) {
+  return (
+    <div
+      className={cn(
+        "flex min-w-0 flex-col",
+        wide ? "text-text-primary" : "text-text-secondary",
+        compact ? "gap-8 text-normal-md" : "gap-16 text-normal-lg",
+        /* ds-one không có leading-relaxed/normal — chỉ có bậc px; đặt sau cỡ chữ vì tailwind-merge bỏ leading-* đứng trước text-normal-*. */
+        wide && "leading-24",
+        className,
+      )}
+    >
+      {groupImageRows(blocks).map((group, index) =>
+        Array.isArray(group) ? (
+          <div key={index} className={cn("flex flex-wrap items-center gap-12", group[0].align === "center" && "justify-center")}>
+            {group.map((block, item) => (
+              <span key={item} className={cn("block", isSmallIcon(block) ? "size-40" : widthFractionClass(block.scale))}>
+                <Block block={{ ...block, scale: undefined }} compact={compact} wide={wide} labels={labels} />
+              </span>
+            ))}
+          </div>
+        ) : (
+          <Block key={index} block={group} compact={compact} wide={wide} labels={labels} />
+        ),
+      )}
+    </div>
+  );
+}

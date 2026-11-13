@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "dautu-vndirect-prod", "runtimeExecutable": "pnpm", "runtimeArgs": ["start", "-p", "3040"], "port": 3040 },
+    { "name": "dautu-vndirect-dev", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev", "-p", "3041"], "port": 3041 }
+  ]
+}

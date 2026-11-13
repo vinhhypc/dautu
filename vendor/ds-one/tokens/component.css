@@ -1,0 +1,29 @@
+/* chờ designer export collection component */
+@source "../components";
+:where([data-brand='vnds']) {
+  --toggle-sm-container-gap: var(--spacing-8);
+  --toggle-md-container-gap: var(--spacing-12);
+  --toggle-track-radius: var(--radius-1000);
+  --toggle-track-padding: 2px;
+  --toggle-sm-track-width: 36px;
+  --toggle-sm-track-height: 20px;
+  --toggle-md-track-width: 44px;
+  --toggle-md-track-height: 24px;
+}
+
+[data-one-toggle-root][data-size='sm'] { gap: var(--toggle-sm-container-gap); }
+[data-one-toggle-root][data-size='md'] { gap: var(--toggle-md-container-gap); }
+[data-one-checkbox-root][data-size='sm'], [data-one-radio-root][data-size='sm'] { gap: var(--spacing-8); }
+[data-one-checkbox-root][data-size='md'], [data-one-radio-root][data-size='md'] { gap: var(--spacing-12); }
+[data-one-toggle-track][data-size='sm'] {
+  width: var(--toggle-sm-track-width);
+  height: var(--toggle-sm-track-height);
+  padding: var(--toggle-track-padding);
+  border-radius: var(--toggle-track-radius);
+}
+[data-one-toggle-track][data-size='md'] {
+  width: var(--toggle-md-track-width);
+  height: var(--toggle-md-track-height);
+  padding: var(--toggle-track-padding);
+  border-radius: var(--toggle-track-radius);
+}

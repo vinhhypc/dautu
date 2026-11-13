@@ -1,0 +1,21 @@
+/* Auto-generated bởi scripts/tokens/three-layer.ts — không sửa tay */
+/* Effect styles extracted from Figma; source node ids are recorded in effect-styles.json. */
+:where([data-brand='vnds']) {
+  --shadow-sm: 0px 1px 3px 0px rgba(13, 13, 13, 0.1),
+    0px 1px 2px -1px rgba(13, 13, 13, 0.1);
+  --shadow-md: 0px 4px 8px -2px rgba(13, 13, 13, 0.1),
+    0px 2px 4px -2px rgba(13, 13, 13, 0.06);
+  --shadow-lg: 0px 12px 16px -4px rgba(13, 13, 13, 0.08),
+    0px 4px 6px -2px rgba(13, 13, 13, 0.03);
+  --effect-glass-blur: 26px;
+  --shadow-illustration-glass: 0px 6px 14px 0px rgba(0, 0, 0, 0.1),
+    inset 0px 4px 7.1px 0px rgba(13, 13, 13, 0.25);
+}
+
+@theme inline {
+  --shadow-*: initial;
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-illustration-glass: var(--shadow-illustration-glass);
+}

@@ -1,0 +1,44 @@
+{
+  "name": "dautu-vndirect",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "node scripts/with-local-ca.mjs next dev",
+    "build": "node scripts/with-local-ca.mjs next build",
+    "start": "node scripts/with-local-ca.mjs next start",
+    "lint": "eslint && pnpm check:images",
+    "check:images": "node scripts/check-images.mjs",
+    "check:site": "node scripts/with-local-ca.mjs node scripts/check-site.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@radix-ui/react-dropdown-menu": "2.2.1",
+    "@radix-ui/react-slot": "1.5.0",
+    "@radix-ui/react-tabs": "1.2.1",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "domhandler": "5.0.3",
+    "domutils": "3.2.2",
+    "htmlparser2": "10.1.0",
+    "motion": "^14.9.0",
+    "next": "16.4.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "3.7.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.4",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.4.5",
+    "sharp": "0.35.5",
+    "tailwindcss": "^4.3.4",
+    "typescript": "^5.9.3"
+  }
+}

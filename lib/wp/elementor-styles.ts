@@ -49,6 +49,10 @@ function rules(css: string): Rule[] {
 }
 
 const ELEMENT_ID = /elementor-element-([a-f0-9]+)/g;
+
+/* Màu mặc định của mọi tiêu đề Elementor (thường là màu primary của Kit) — áp cho tiêu đề không tự đặt màu. */
+const DEFAULT_HEADING_SELECTOR = ".elementor-widget-heading .elementor-heading-title";
+export const DEFAULT_HEADING_STYLE = "default-heading";
 const DECLARATION = (name: string) => new RegExp(`(?:^|;)\\s*${name}\\s*:\\s*([^;!]+)`);
 
 function declaration(body: string, name: string): string | undefined {
@@ -90,7 +94,11 @@ export function parseElementorStyles(css: string, globals: Map<string, string> =
       if (part.includes(":hover") || part.includes(":focus")) continue;
       const ids = [...part.matchAll(ELEMENT_ID)].map((match) => match[1]);
       const id = ids.at(-1);
-      if (!id) continue;
+      if (!id) {
+        const color = declaration(body, "color");
+        if (part.trim() === DEFAULT_HEADING_SELECTOR && color?.startsWith("#")) update(styles, DEFAULT_HEADING_STYLE, { color });
+        continue;
+      }
       const tail = part.slice(part.lastIndexOf(`elementor-element-${id}`) + `elementor-element-${id}`.length).trim();
       const targetsElement = tail === "" || tail.startsWith(">") || tail.startsWith(".elementor-heading-title");
       const rawAlign = declaration(body, "text-align");
@@ -104,17 +112,20 @@ export function parseElementorStyles(css: string, globals: Map<string, string> =
       const borderWidth = declaration(body, "border-width");
       const isFullBorder = !borderWidth || !/(^|\s)0(px)?(\s|$)/.test(borderWidth);
       const isOverlay = tail.includes("background-overlay");
+      const isIcon = /elementor-icon\b|icon-box-icon/.test(tail);
 
       update(styles, id, {
         align: (align === "left" || align === "center" || align === "right") && !/icon-list|tab|toggle|accordion/.test(tail) ? align : undefined,
         columnWidth: tail === "" && width ? width : undefined,
         imageWidth: /\bimg$/.test(tail) && (width || maxWidth) ? Math.min(width ?? 1, maxWidth ?? 1) : undefined,
         color: color?.startsWith("#") && (targetsElement || tail.includes("heading-title")) ? color : undefined,
-        background: background?.startsWith("#") && !tail.includes("button") && !isOverlay ? background : undefined,
+        background: background?.startsWith("#") && !tail.includes("button") && !isOverlay && !isIcon ? background : undefined,
         border:
-          borderStyle && borderStyle !== "none" && isFullBorder && borderColor?.startsWith("#") && !tail.includes("button") ? borderColor : undefined,
+          borderStyle && borderStyle !== "none" && isFullBorder && borderColor?.startsWith("#") && !tail.includes("button") && !isIcon
+            ? borderColor
+            : undefined,
         minHeight: tail.startsWith(">") || tail === "" ? pixels(declaration(body, "min-height")) : undefined,
-        fontSize: tail.includes("heading-title") ? pixels(declaration(body, "font-size")) : undefined,
+        fontSize: tail.includes("heading-title") || tail === "" ? pixels(declaration(body, "font-size")) : undefined,
         marginRight: tail.includes("widget-container") ? pixels(declaration(body, "margin")?.split(/\s+/)[1]) : undefined,
         shadow: (tail === "" || tail.startsWith(">")) && /box-shadow\s*:\s*(?!none)/.test(body) ? true : undefined,
         paddingTop: tail === "" || tail === "> .elementor-container" ? pixels(declaration(body, "padding")?.split(/\s+/)[0]) : undefined,
@@ -135,12 +146,13 @@ function rgb(hex: string): [number, number, number] | undefined {
   return [0, 2, 4].map((offset) => parseInt(full.slice(offset, offset + 2), 16)) as [number, number, number];
 }
 
-/* Màu chữ tiêu đề: cam/vàng → brand, tím (#47236C của DGO/VNDSTOCK) → purple; còn lại giữ màu chữ mặc định. */
-export function textToneOf(hex: string | undefined): "brand" | "purple" | undefined {
+/* Màu chữ tiêu đề: cam/vàng → brand, tím (#47236C của DGO/VNDSTOCK) → purple, xanh lá (#248D00 của VNDBF) → green; còn lại giữ màu chữ mặc định. */
+export function textToneOf(hex: string | undefined): "brand" | "purple" | "green" | undefined {
   const color = hex && rgb(hex);
   if (!color) return undefined;
   const [red, green, blue] = color;
   if (red > 200 && green > 100 && blue < 90) return "brand";
+  if (green > red + 40 && green > blue + 40) return "green";
   if (blue > green + 30 && red > green + 10 && red < 160) return "purple";
   return undefined;
 }

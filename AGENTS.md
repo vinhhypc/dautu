@@ -37,6 +37,7 @@ Toàn bộ giao diện dùng **ds-one** — mã nguồn component, util, icon v�
 | `Pagination` | tự viết bằng link — Pagination ds-one là bản mô phỏng Figma (rộng cố định 1076px, nút + onPageChange) |
 | `Tabs` | `Tabs` (chép từ `system-ui-26`, rút gọn) — `forceMount` + ẩn bằng CSS để nội dung mọi tab có trong HTML |
 | `StepSlider` | theo slider của vnd-20 — tự chạy (`useStepAutoplay`, `--step-progress`), thanh bước `01 02 03` có vạch tiến trình (`StepTrack`), chuyển cảnh mờ dần, mobile là dải cuộn ngang (`useStepStrip`); dùng cho mọi slider (banner, slide, ảnh, cảm nhận khách hàng) |
+| `Skeleton`, `FormSkeleton`, `EmbedSkeleton` | tự viết — bản ds-one chép về chưa có Skeleton; dùng khi chờ form HubSpot, iframe nhúng |
 | `HubspotForm` | tự viết — nhúng form HubSpot (portal `8030318`) của trang WordPress, nạp script khi form gần vào màn hình |
 | `WpImage` | `next/image` khi ảnh WP có width/height, không thì `<img>` giữ link gốc |
 

@@ -16,6 +16,7 @@ import {
 import { parseElementorGlobals, parseElementorStyles } from "./elementor-styles";
 import { htmlToBlocks, htmlToText } from "./html";
 import { mergeTitleSections } from "./sections";
+import { withSheetCharts } from "./sheets";
 import { normalizePath } from "../path";
 import { type WpSeo, type YoastHead, seoFromYoast } from "./seo";
 
@@ -99,7 +100,7 @@ async function loadElementorCss(html: string): Promise<string> {
 export async function toSections(html: string): Promise<Pick<WpDocument, "sections" | "unsupported">> {
   if (!isElementorHtml(html)) {
     const blocks = htmlToBlocks(html);
-    return { sections: blocks.length ? [{ id: "s-content", widgets: [{ type: "richText", blocks }] }] : [], unsupported: {} };
+    return { sections: await withSheetCharts(blocks.length ? [{ id: "s-content", widgets: [{ type: "richText", blocks }] }] : []), unsupported: {} };
   }
   const [css, kit] = await Promise.all([loadElementorCss(html), elementorCss(elementorKitId)]);
   const { sections, unsupported } = elementorToSections(
@@ -107,7 +108,7 @@ export async function toSections(html: string): Promise<Pick<WpDocument, "sectio
     parseElementorBackgrounds(css),
     parseElementorStyles(css, parseElementorGlobals(kit)),
   );
-  return { sections: mergeTitleSections(sections), unsupported: Object.fromEntries(unsupported) };
+  return { sections: await withSheetCharts(mergeTitleSections(sections)), unsupported: Object.fromEntries(unsupported) };
 }
 
 async function getPage(path: string): Promise<WpDocument | undefined> {

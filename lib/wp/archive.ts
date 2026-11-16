@@ -130,7 +130,13 @@ export async function listPosts(term: Pick<WpTerm, "id" | "taxonomy">, page: num
   return Promise.all(posts.map(toSummary));
 }
 
-export type PostSearchResult = { items: PostSummary[]; total: number; totalPages: number };
+export async function listLatestPosts(count: number): Promise<PostSummary[]> {
+  const params = new URLSearchParams({ per_page: String(count), _embed: "wp:featuredmedia", _fields: SUMMARY_FIELDS });
+  const posts = await wpJson<WpPostResponse[]>(`/wp-json/wp/v2/posts?${params}`);
+  return Promise.all(posts.map(toSummary));
+}
+
+export type PostSearchResult ={ items: PostSummary[]; total: number; totalPages: number };
 
 export async function searchPosts(query: string, page: number): Promise<PostSearchResult> {
   const params = new URLSearchParams({

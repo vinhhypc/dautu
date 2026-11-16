@@ -1,3 +1,4 @@
+import { linkInContext } from "@/lib/a11y";
 import type { HomeContent } from "@/lib/wp/home";
 import type { LinkItem, WpSectionLabels } from "@/types/content";
 
@@ -24,7 +25,7 @@ export function HomeBanner({ title, banners }: { title: string; banners: HomeCon
         {title}
       </h1>
       {banners.length > 0 && (
-        <div className="mx-auto w-full max-w-1440 px-16 md:px-32">
+        <div className="mx-auto w-full max-w-1920 px-16 lg:px-24">
           <BannerSlider slides={banners} priority imageClassName="rounded-12 md:rounded-16" />
         </div>
       )}
@@ -84,7 +85,12 @@ export function HomeProducts({ content, labels }: HomeSectionProps<"products">) 
               {front.title && <h3 className="text-normal-xl font-semibold text-text-primary">{front.title}</h3>}
               <RichText blocks={front.body} labels={labels} compact className="items-center" />
               {back.link && (
-                <TextLink href={back.link.href} trailingIcon="arrow-right" className="mt-auto">
+                <TextLink
+                  href={back.link.href}
+                  trailingIcon="arrow-right"
+                  ariaLabel={linkInContext(labels.flipHint, front.title)}
+                  className="mt-auto"
+                >
                   {labels.flipHint}
                 </TextLink>
               )}
@@ -133,7 +139,7 @@ export function HomeVoices({ testimonials, support, supportActions, labels }: Ho
       {testimonials?.background && (
         <WpImage image={testimonials.background} sizes="100vw" className="absolute inset-0 -z-10 size-full object-cover opacity-20" />
       )}
-      <RevealChildren container className="grid items-start gap-32 lg:grid-cols-2 lg:gap-48">
+      <RevealChildren container className="flex flex-col gap-32 lg:gap-48">
         {testimonials && (
           <div className="flex min-w-0 flex-col gap-24">
             {testimonials.title && (

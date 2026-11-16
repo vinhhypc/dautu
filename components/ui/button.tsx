@@ -66,14 +66,15 @@ type ButtonLinkProps = {
   variant?: ButtonVariant;
   size?: ButtonSize;
   trailingIcon?: IconName;
+  ariaLabel?: string;
   className?: string;
   children: ReactNode;
 };
 
 /* ds-one Button chưa hỗ trợ asChild với next/link → dựng lại cấu trúc bằng class của ds-one. */
-export function ButtonLink({ href, variant = "primary", size = "md", trailingIcon, className, children }: ButtonLinkProps) {
+export function ButtonLink({ href, variant = "primary", size = "md", trailingIcon, ariaLabel, className, children }: ButtonLinkProps) {
   return (
-    <RouteLink href={href} className={buttonClasses(variant, size, className)}>
+    <RouteLink href={href} aria-label={ariaLabel} className={buttonClasses(variant, size, className)}>
       <span className={buttonTextboxClasses(variant, size)}>
         <span className="block text-center whitespace-nowrap">{children}</span>
       </span>

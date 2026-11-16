@@ -3,7 +3,7 @@ import { findAll, findOne, getOuterHTML, textContent } from "domutils";
 
 import type { LinkItem, RichBlock, WpCardFace, WpColumn, WpImage, WpPanel, WpSection, WpTone, WpWidget, WpWidgetStyle } from "@/types/content";
 
-import { type ElementorStyles, textToneOf, toneOf } from "./elementor-styles";
+import { DEFAULT_HEADING_STYLE, type ElementorStyles, textToneOf, toneOf } from "./elementor-styles";
 import { imageSrc, lazySrc, nodesToBlocks, normalizeHref, parseHtml } from "./html";
 
 /* Ảnh nền slide/section nằm trong file CSS Elementor (post-<id>.css), không có trong HTML: key là class elementor-repeater-item-* / elementor-element-*. */
@@ -15,7 +15,7 @@ type Extractor = (widget: Element, context: ExtractContext) => WpWidget[];
 
 /* Elementor nhân đôi khối cho từng thiết bị và ẩn bằng class — giữ bản desktop, bỏ bản chỉ hiện trên mobile/tablet. */
 const HIDDEN_ON_DESKTOP = "elementor-hidden-desktop";
-const SKIPPED_WIDGETS = new Set(["spacer", "divider", "icon", "template", "global", "menu-anchor", "google_maps"]);
+const SKIPPED_WIDGETS = new Set(["spacer", "icon", "template", "global", "menu-anchor", "google_maps"]);
 const HUBSPOT_SCRIPT = /hbspt\.forms\.create\(\s*\{([\s\S]*?)\}\s*\)/;
 
 function classes(element: Element): string[] {
@@ -141,9 +141,10 @@ const EXTRACTORS: Record<string, Extractor> = {
     const size = fontSize >= DISPLAY_FONT_PX ? "display" : fontSize > 0 && fontSize <= SMALL_FONT_PX ? "small" : undefined;
     return value ? [{ type: "heading", level: headingLevel(title ?? undefined), text: value, href: link(title ?? undefined)?.href, size }] : [];
   },
-  "text-editor": (widget) => {
+  "text-editor": (widget, context) => {
     const content = blocks(first(widget, "elementor-widget-container") ?? widget);
-    return content.length ? [{ type: "richText", blocks: content }] : [];
+    const lead = (context.styles.get(elementId(widget) ?? "")?.fontSize ?? 0) >= LEAD_FONT_PX || undefined;
+    return content.length ? [{ type: "richText", blocks: content, lead }] : [];
   },
   image: (widget) => {
     const img = image(widget);
@@ -187,8 +188,11 @@ const EXTRACTORS: Record<string, Extractor> = {
       const value = text(first(item, "elementor-icon-list-text") ?? item);
       return value ? [{ text: value, href: link(item)?.href }] : [];
     });
-    return items.length ? [{ type: "iconList", items }] : [];
+    const iconClass = first(widget, "elementor-icon-list-icon")?.children.find(isTag)?.attribs.class ?? "";
+    const marker = !iconClass || /check/.test(iconClass) ? "check" : "dot";
+    return items.length ? [{ type: "iconList", items, marker }] : [];
   },
+  divider: () => [{ type: "divider" }],
   accordion: (widget) => [{ type: "faq", items: panels(widget, byClass("elementor-tab-title")) }],
   toggle: (widget) => [{ type: "faq", items: panels(widget, byClass("elementor-tab-title")) }],
   tabs: (widget) => [{ type: "tabs", items: panels(widget, (node) => hasClass(node, "elementor-tab-desktop-title")) }],
@@ -287,6 +291,7 @@ const GRID_COLUMNS = 12;
 const TALL_SECTION_PX = 350;
 const DISPLAY_FONT_PX = 40;
 const SMALL_FONT_PX = 18;
+const LEAD_FONT_PX = 24;
 const MAX_COLUMNS_PER_ROW = 4;
 /* Elementor hay thu hẹp khối chữ bằng lề phải lớn (vd. margin-right 640px ở hero) thay vì chia cột. */
 const NARROW_MARGIN_PX = 240;
@@ -337,9 +342,10 @@ function widgetStyle(element: Element, context: ExtractContext): WpWidgetStyle {
   const style = context.styles.get(elementId(element) ?? "");
   const alignClass = classes(element).find((name) => /^elementor-(?:align|widget__align)-(left|center|right)$/.test(name));
   const align = style?.align ?? (alignClass?.match(/(left|center|right)$/)?.[1] as WpWidgetStyle["align"]);
+  const defaultColor = widgetType(element) === "heading" ? context.styles.get(DEFAULT_HEADING_STYLE)?.color : undefined;
   return {
     align,
-    tone: textToneOf(style?.color),
+    tone: textToneOf(style?.color ?? defaultColor),
     width: style?.imageWidth,
     surface: surfaceOf(style?.background),
     outline: outlineOf(style?.border),

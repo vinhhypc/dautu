@@ -326,13 +326,15 @@ export type RichBlock =
   | { type: "table"; rows: RichTableCell[][] }
   | { type: "image"; src: string; alt: string; width?: number; height?: number; scale?: number; align?: RichAlign; href?: string }
   | { type: "video"; src: string; title: string }
-  | { type: "embed"; src: string; title: string; height?: number; wide?: boolean }
+  | { type: "embed"; src: string; title: string; height?: number; wide?: boolean; chart?: string }
   | { type: "disclosure"; id?: string; title: RichInline[]; children: RichBlock[] }
   | { type: "pdf"; src: string; title: string }
   | { type: "rule" };
 
 export type RichTextLabels = {
   openPdf: string;
+  embedLoading: string;
+  openEmbed: string;
 };
 
 export type ArchiveListItem = {
@@ -522,7 +524,7 @@ export type WpColumn = {
 /* align/tone/width giữ lại từ CSS Elementor (căn lề, chữ màu thương hiệu, độ rộng ảnh theo tỉ lệ 0–1). */
 export type WpWidgetStyle = {
   align?: WpAlign;
-  tone?: "brand" | "purple";
+  tone?: "brand" | "purple" | "green";
   width?: number;
   surface?: WpTone;
   outline?: WpTone;
@@ -532,12 +534,13 @@ export type WpWidgetStyle = {
 
 export type WpWidget = (
   | { type: "heading"; level: 1 | 2 | 3 | 4; text: string; href?: string; hidden?: boolean; size?: "display" | "small" }
-  | { type: "richText"; blocks: RichBlock[] }
+  | { type: "richText"; blocks: RichBlock[]; lead?: boolean }
   | { type: "image"; image: WpImage; href?: string }
   | { type: "button"; link: LinkItem }
   | { type: "card"; card: WpCardFace }
   | { type: "flipCard"; front: WpCardFace; back: WpCardFace }
-  | { type: "iconList"; items: { text: string; href?: string }[] }
+  | { type: "iconList"; items: { text: string; href?: string }[]; marker: "check" | "dot" }
+  | { type: "divider" }
   | { type: "faq"; items: WpPanel[] }
   | { type: "tabs"; items: WpPanel[] }
   | { type: "slides"; items: WpSlide[] }

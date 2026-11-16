@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { DocumentLayout } from "@/components/sections/document-layout";
+import { LatestPosts } from "@/components/sections/latest-posts";
 import { PostArticle } from "@/components/sections/post-article";
 import { type PostCardItem, PostList } from "@/components/sections/post-list";
 import { SearchForm } from "@/components/sections/search-form";
@@ -10,9 +11,11 @@ import {
   wpArchiveLabels,
   wpArticleLabels,
   wpBlogHome,
+  wpBlogLatest,
   wpBlogSubscribeForm,
   wpBreadcrumbHome,
   wpDocumentLabels,
+  wpHiddenCategoryPaths,
   wpSearchLabels,
   wpSearchPath,
   wpSectionLabels,
@@ -30,8 +33,10 @@ import {
   getCategoryByPath,
   getTagByPath,
   listCategories,
+  listLatestPosts,
   listPosts,
 } from "@/lib/wp/archive";
+import { wpOrFallback } from "@/lib/wp/client";
 import { siteUploadPath } from "@/lib/wp/origin";
 import type { PaginationContent, PostSummary, SearchFormContent, SideNavSection } from "@/types/content";
 
@@ -69,11 +74,17 @@ function toCard(post: PostSummary): PostCardItem {
 }
 
 async function categoryNav(currentPaths: string[]): Promise<SideNavSection> {
-  const categories = (await listCategories()).filter((category) => category.count > 0);
+  const hidden = new Set(wpHiddenCategoryPaths);
+  const categories = (await listCategories()).filter((category) => category.count > 0 && !hidden.has(category.path));
   return {
     title: wpArchiveLabels.categoriesTitle,
     groups: [{ links: categories.map((category) => ({ label: category.name, href: category.path, current: currentPaths.includes(category.path) })) }],
   };
+}
+
+export async function BlogLatestPosts() {
+  const posts = await wpOrFallback(listLatestPosts(wpBlogLatest.count), [], "blog: bài mới nhất");
+  return <LatestPosts title={wpBlogLatest.title} items={posts.map(toCard)} search={searchForm()} />;
 }
 
 export function archiveMetadata({ term, page, totalPages }: WpArchive): Metadata {

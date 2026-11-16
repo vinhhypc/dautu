@@ -44,6 +44,15 @@ export function lazySrc(element: Element): string | undefined {
   return attribs["data-lazy-src"] ?? attribs["data-src"] ?? attribs.src;
 }
 
+/* account-v2 chuyển hướng 2 lần (myaccount → mydgo) trước khi tới form mở tài khoản — trỏ thẳng địa chỉ cuối (kiểm tra 16/11/2026). */
+const ACCOUNT_FORM_LEGACY = "https://account-v2.vndirect.com.vn/";
+const ACCOUNT_FORM = "https://mydgo.vndirect.com.vn/mo-tai-khoan/";
+
+function finalEmbedSrc(src: string): string {
+  const url = new URL(src);
+  return url.origin + url.pathname === ACCOUNT_FORM_LEGACY ? ACCOUNT_FORM + url.search : src;
+}
+
 /* Chỉ nhúng iframe của chính VNDIRECT (vd. form mở tài khoản account-v2.vndirect.com.vn) và bảng/biểu đồ Google Sheets đã xuất bản (NAV, phân bổ tài sản của quỹ); iframe khác bỏ đi. */
 function isTrustedEmbed(src: string): boolean {
   try {
@@ -300,7 +309,7 @@ function blockFor(element: Element): RichBlock[] {
     return [
       {
         type: "embed",
-        src,
+        src: finalEmbedSrc(src),
         title: collapse(element.attribs.title ?? "") || new URL(src).hostname,
         height: height > 0 ? height : undefined,
         wide: width > WIDE_EMBED_PX || undefined,

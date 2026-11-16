@@ -1,6 +1,7 @@
 import { cn } from "@/lib/cn";
 import type { FooterContent, FooterGroup as FooterGroupData, FooterLink as FooterLinkData } from "@/types/content";
 
+import { Container } from "../ui/container";
 import { Icon } from "../ui/icon";
 import { RouteLink } from "../ui/route-link";
 import { IconLink } from "../ui/icon-button";
@@ -53,7 +54,7 @@ function FooterGroupColumn({ title, links }: FooterGroupData) {
 export function Footer({ navLabel, groups, contact, copyright, legalLabel, legalLinks, slogan }: FooterContent) {
   return (
     <footer className="border-t border-border-subtle bg-background-canvas text-normal-l lg:text-normal-lg">
-      <div className="mx-auto flex w-full max-w-1920 flex-col gap-48 px-16 pt-32 pb-64 lg:gap-64 lg:px-24 lg:py-32">
+      <Container className="flex flex-col gap-48 pt-32 pb-64 lg:gap-64 lg:py-32">
         <div className="flex flex-col gap-32 lg:grid lg:grid-cols-4 lg:gap-40">
           <div className="flex min-w-0 flex-col gap-24 lg:gap-16">
             <div className="flex flex-col gap-12 lg:gap-16">
@@ -87,7 +88,7 @@ export function Footer({ navLabel, groups, contact, copyright, legalLabel, legal
           </nav>
         </div>
 
-        <div className="flex flex-col border-t border-border-subtle pt-24 text-text-tertiary lg:grid lg:grid-cols-3 lg:gap-24">
+        <div className="flex flex-col border-t border-border-subtle pt-24 text-text-tertiary lg:flex-row lg:items-center lg:gap-24">
           <p>{copyright}</p>
           {legalLinks.length > 0 && (
             <nav aria-label={legalLabel}>
@@ -100,9 +101,9 @@ export function Footer({ navLabel, groups, contact, copyright, legalLabel, legal
               </ul>
             </nav>
           )}
-          <p className="lg:col-start-3 lg:text-right">{slogan}</p>
+          <p className="lg:ml-auto">{slogan}</p>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

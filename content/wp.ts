@@ -1,5 +1,7 @@
 import type { DocumentPageLabels, HubspotFormConfig, PostArticleLabels, WpSectionLabels } from "@/types/content";
 
+import { hotlineHref } from "./links";
+
 /* Trang WordPress không dựng sang Next (rác/test/rỗng/nội bộ) — xem docs/research/site/url-inventory.csv nhóm rac-rong, noi-bo. */
 export const wpExcludedPaths = [
   "/test-source-mtk/",
@@ -26,14 +28,29 @@ export const elementorKitId = "17763";
 
 export const wpSectionLabels: WpSectionLabels = {
   openPdf: "Mở tài liệu PDF",
+  embedLoading: "Đang tải nội dung…",
+  openEmbed: "Mở trong tab mới",
   formLoading: "Đang tải biểu mẫu…",
   formError: "Không tải được biểu mẫu. Vui lòng thử lại hoặc gọi 1900 545 409.",
   flipHint: "Xem thêm",
 };
 
+/* Thanh liên hệ dính đáy màn hình trên mobile ở các landing; "Đăng ký tư vấn" nhảy tới form của trang nếu có, không thì sang trang đăng ký. */
+export const wpMobileCta = {
+  label: "Liên hệ tư vấn",
+  call: { label: "Gọi tổng đài", href: hotlineHref },
+  consult: { label: "Đăng ký tư vấn", href: "/dang-ky-tim-chuyen-gia/" },
+};
+
 export const wpBreadcrumbHome = { label: "Trang chủ", href: "/" };
 
 export const wpBlogHome = { label: "Blog", href: "/blog/" };
+
+/* Trang /blog/ trên WP chỉ có 4 bài nổi bật — thêm danh sách bài mới để có lối vào các bài còn lại. */
+export const wpBlogLatest = { title: "Bài viết mới nhất", count: 9 };
+
+/* Chuyên mục nội bộ/mẫu không đưa vào thanh chuyên mục (vẫn mở được bằng URL). */
+export const wpHiddenCategoryPaths = ["/category/danh-muc-mau/"];
 
 export const wpDocumentLabels: DocumentPageLabels = {
   breadcrumb: "Đường dẫn",

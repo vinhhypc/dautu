@@ -198,6 +198,22 @@ Chỉ ghi lỗi riêng của trang; lỗi chung ở mục 2.
 - G9: tiêu đề đứng một mình trong khối màu hiển thị như tiêu đề thường.
 - H1: nút "Mở tài khoản" cỡ nhỏ cạnh nút menu dưới 1280px. H2/H3: "Support" → "Hỗ trợ", cả 6 mục menu hiện từ 1280px (bỏ nút "…").
 
+### Trạng thái đợt 2 (16/11/2026)
+
+Đã sửa phần FE: G8, G11 (ảnh-link), G12, G13, G14, blog "Bài viết mới nhất", ẩn chuyên mục nội bộ.
+
+Đã bỏ theo yêu cầu: G10 (nút phóng to ảnh — làm vỡ bố cục), F1/F2/F5 (footer giữ nguyên như cũ). Thay F1: nội dung trang đổi sang full width cùng khung với header/footer (`Container`: tối đa 1920px, lề 16/24px).
+
+- G8: iframe nhúng có nền + chữ "Đang tải nội dung…" bên dưới, link "Mở trong tab mới"; iframe `account-v2` trỏ thẳng `mydgo.vndirect.com.vn/mo-tai-khoan/`.
+- G11: ảnh-link thiếu alt lấy tên miền đích làm tên link. Alt ảnh vẫn cần marketing bổ sung trên WP.
+- G12: link nhãn ngắn ("Xem thêm", "Tìm hiểu thêm"…) trong thẻ có tên đầy đủ "nhãn: tiêu đề thẻ".
+- G13: số 1900/1800 trong nội dung tự thành link `tel:`.
+- G14: landing (trừ `/blog/`) có thanh "Gọi tổng đài / Đăng ký tư vấn" dính đáy dưới 768px; "Đăng ký tư vấn" nhảy tới form HubSpot của trang nếu có.
+- Mục lục "Nội dung trang" tự sinh cho landing dài: đã làm rồi gỡ theo yêu cầu (lỗi "Trang dài, không có mục lục" của D-Bond còn để ngỏ).
+- Blog: `/blog/` thêm 9 bài mới nhất + ô tìm kiếm; thanh chuyên mục ẩn "Danh mục mẫu".
+
+Còn lại của đợt 2: G9 đã xong ở đợt 1; G14 phần nút hero là việc của marketing.
+
 Chưa kiểm tra trong đợt này (đưa vào đợt sau):
 
 - Bản production (`pnpm build && pnpm start`) — đợt này chạy dev server, tốc độ tải và hiệu ứng có thể khác.

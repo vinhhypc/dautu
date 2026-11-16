@@ -2,11 +2,16 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 import { widthFractionClass } from "@/lib/fraction";
+import { linkHost, sheetChartImageSrc } from "@/lib/image";
+import { splitHotlines } from "@/lib/phone";
 import type { RichBlock, RichInline, RichTableCell, RichTextLabels } from "@/types/content";
 
 import { ButtonLink } from "../ui/button";
 import { Disclosure } from "../ui/disclosure";
 import { RouteLink } from "../ui/route-link";
+import { EmbedSkeleton } from "../ui/skeleton";
+import { TextLink } from "../ui/text-link";
+import { WpImage } from "../ui/wp-image";
 
 /* Chiều cao iframe theo thuộc tính height của WP → bậc gần nhất. */
 function embedHeight(height?: number) {
@@ -17,32 +22,44 @@ function embedHeight(height?: number) {
   return "h-720";
 }
 
-function Inlines({ items }: { items: RichInline[] }) {
-  return items.map((item, index) => <InlineNode key={index} item={item} />);
+function Inlines({ items, inLink = false }: { items: RichInline[]; inLink?: boolean }) {
+  return items.map((item, index) => <InlineNode key={index} item={item} inLink={inLink} />);
 }
 
-function InlineNode({ item }: { item: RichInline }): ReactNode {
+function TextWithHotlines({ value }: { value: string }) {
+  return splitHotlines(value).map((part, index) =>
+    part.tel ? (
+      <RouteLink key={index} href={part.tel} className="link-text whitespace-nowrap">
+        {part.text}
+      </RouteLink>
+    ) : (
+      part.text
+    ),
+  );
+}
+
+function InlineNode({ item, inLink }: { item: RichInline; inLink: boolean }): ReactNode {
   switch (item.type) {
     case "text":
-      return item.value;
+      return inLink ? item.value : <TextWithHotlines value={item.value} />;
     case "break":
       return <br />;
     case "strong":
       return (
         <strong className="font-semibold text-text-primary">
-          <Inlines items={item.children} />
+          <Inlines items={item.children} inLink={inLink} />
         </strong>
       );
     case "em":
       return (
         <em>
-          <Inlines items={item.children} />
+          <Inlines items={item.children} inLink={inLink} />
         </em>
       );
     case "link":
       return (
         <RouteLink href={item.href} className="link-text break-words">
-          <Inlines items={item.children} />
+          <Inlines items={item.children} inLink />
         </RouteLink>
       );
   }
@@ -217,6 +234,7 @@ function Block({ block, compact, wide, labels }: BlockProps): ReactNode {
       return block.href ? (
         <RouteLink
           href={block.href}
+          aria-label={block.alt ? undefined : linkHost(block.href)}
           className={cn("block rounded-8 transition-opacity hover:opacity-90", block.scale && widthFractionClass(block.scale))}
         >
           {image}
@@ -238,18 +256,37 @@ function Block({ block, compact, wide, labels }: BlockProps): ReactNode {
           />
         </div>
       );
-    case "embed":
+    /* Biểu đồ Google Sheets, form mở tài khoản tải 5–10 giây: skeleton nằm dưới iframe (nền trong suốt) đến khi nội dung vẽ đè lên. */
+    case "embed": {
+      const chartImage = block.chart ?? sheetChartImageSrc(block.src);
+      if (chartImage)
+        return (
+          <div className="flex w-full flex-col gap-8">
+            <div className="relative isolate min-h-160 overflow-hidden rounded-12 border border-border-subtle bg-background-base">
+              <EmbedSkeleton className="absolute inset-0 -z-10" />
+              <WpImage image={{ src: chartImage, alt: block.title }} sizes="100vw" className="w-full bg-background-base" />
+            </div>
+            <TextLink href={block.src} trailingIcon="arrow-right-up" className="self-end">
+              {labels.openEmbed}
+            </TextLink>
+          </div>
+        );
       return (
-        <iframe
-          src={block.src}
-          title={block.title}
-          loading="lazy"
-          className={cn("w-full rounded-12 border border-border-subtle bg-background-base", !block.wide && "max-w-720", embedHeight(block.height))}
-        />
+        <div className={cn("flex w-full flex-col gap-8", !block.wide && "max-w-720")}>
+          <div className={cn("relative isolate overflow-hidden rounded-12 border border-border-subtle bg-background-base", embedHeight(block.height))}>
+            <EmbedSkeleton className="absolute inset-0 -z-10" />
+            <p className="sr-only">{labels.embedLoading}</p>
+            <iframe src={block.src} title={block.title} loading="lazy" className="size-full" />
+          </div>
+          <TextLink href={block.src} trailingIcon="arrow-right-up" className="self-end">
+            {labels.openEmbed}
+          </TextLink>
+        </div>
       );
+    }
     case "disclosure":
       return (
-        <Disclosure id={block.id} title={<Inlines items={block.title} />}>
+        <Disclosure id={block.id} title={<Inlines items={block.title} inLink />}>
           <RichText blocks={block.children} labels={labels} wide={wide} />
         </Disclosure>
       );

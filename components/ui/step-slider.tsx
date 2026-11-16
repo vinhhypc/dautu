@@ -85,15 +85,15 @@ export function StepSlider({ slides, durationMs = DEFAULT_DURATION_MS, showCount
   return (
     <div ref={scope} className={cn("flex flex-col gap-24 [--step-progress:0]", className)} {...pauseHandlers}>
       {showCounter && <p className="text-normal-lg font-medium text-text-secondary">{formatStepCounter(active, slides.length)}</p>}
-      {/* Chỉ slide đang hiện chiếm chỗ — slide dài không đẩy thanh bước xuống xa. */}
-      <div className="relative">
+      {/* Mọi slide chồng trong một ô grid: khung cao bằng slide cao nhất, đổi slide không làm giật trang. */}
+      <div className="grid">
         {slides.map((slide, index) => (
           <div
             key={index}
             id={`${id}-panel-${index}`}
             inert={index !== active}
             aria-hidden={index !== active}
-            className={cn("min-w-0", PANEL_TRANSITION, index === active ? "relative opacity-100" : "absolute inset-x-0 top-0 opacity-0")}
+            className={cn("flex min-w-0 flex-col [grid-area:1/1] *:flex-1", PANEL_TRANSITION, index === active ? "opacity-100" : "opacity-0")}
           >
             {slide.content}
           </div>

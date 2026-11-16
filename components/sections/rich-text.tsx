@@ -64,6 +64,57 @@ function TableCell({ cell, labels }: { cell: RichTableCell; labels: RichTextLabe
   );
 }
 
+const MIN_STACK_COLUMNS = 3;
+
+/* Bảng so sánh (hàng đầu là tên cột, cột đầu là nhãn hàng, không gộp ô) mới chuyển được thành thẻ trên mobile. */
+function isComparisonGrid(rows: RichTableCell[][]) {
+  const width = rows[0]?.length ?? 0;
+  return (
+    rows.length >= 2 &&
+    width >= MIN_STACK_COLUMNS &&
+    rows.every((row) => row.length === width && row.every((cell) => (cell.colSpan ?? 1) === 1 && (cell.rowSpan ?? 1) === 1))
+  );
+}
+
+const hasContent = (cell?: RichTableCell) => Boolean(cell && cell.children.length > 0);
+
+/* Bảng nhiều cột trên màn hẹp: mỗi cột thành một thẻ, mỗi hàng thành cặp nhãn – giá trị (cột ~150px không đọc được). */
+function StackedTable({ rows, labels }: { rows: RichTableCell[][]; labels: RichTextLabels }) {
+  const [head, ...body] = rows;
+  return (
+    <div className="flex flex-col gap-16 md:hidden">
+      {head.slice(1).map((title, offset) => {
+        const column = offset + 1;
+        return (
+          <div key={column} className="flex flex-col gap-12 rounded-8 border border-border-subtle p-16">
+            {hasContent(title) && (
+              <div className="text-normal-lg font-semibold text-text-primary">
+                <RichText blocks={title.children} labels={labels} compact />
+              </div>
+            )}
+            <dl className="flex flex-col gap-12">
+              {body.map((row, rowIndex) =>
+                hasContent(row[column]) ? (
+                  <div key={rowIndex} className="flex flex-col gap-4">
+                    {hasContent(row[0]) && (
+                      <dt className="text-normal-l font-medium text-text-tertiary">
+                        <RichText blocks={row[0].children} labels={labels} compact />
+                      </dt>
+                    )}
+                    <dd className="text-text-secondary">
+                      <RichText blocks={row[column].children} labels={labels} compact />
+                    </dd>
+                  </div>
+                ) : null,
+              )}
+            </dl>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 type ImageBlock = Extract<RichBlock, { type: "image" }>;
 
 /* Icon nhỏ (width ≤ 1/3) đứng liền nhau — vd. SoundCloud/YouTube/Facebook trong cùng đoạn — hiển thị cùng một hàng như WordPress. */
@@ -129,22 +180,27 @@ function Block({ block, compact, wide, labels }: BlockProps): ReactNode {
         </Tag>
       );
     }
-    case "table":
+    case "table": {
+      const stacked = isComparisonGrid(block.rows);
       return (
-        <div className="max-w-full overflow-x-auto rounded-8 border border-border-subtle">
-          <table className="w-full border-collapse text-normal-l">
-            <tbody>
-              {block.rows.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {row.map((cell, cellIndex) => (
-                    <TableCell key={cellIndex} cell={cell} labels={labels} />
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {stacked && <StackedTable rows={block.rows} labels={labels} />}
+          <div className={cn("max-w-full overflow-x-auto rounded-8 border border-border-subtle", stacked && "max-md:hidden")}>
+            <table className="w-full border-collapse text-normal-l">
+              <tbody>
+                {block.rows.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((cell, cellIndex) => (
+                      <TableCell key={cellIndex} cell={cell} labels={labels} />
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       );
+    }
     case "image": {
       const image = (
         // eslint-disable-next-line @next/next/no-img-element -- ảnh trong nội dung WordPress giữ link gốc, không biết trước kích thước (ngoại lệ K6, docs/research/site/migration-plan.md).

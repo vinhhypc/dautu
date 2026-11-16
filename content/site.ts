@@ -112,11 +112,11 @@ export const siteContent = {
         },
       },
       {
-        label: "Support",
+        label: "Hỗ trợ",
         menu: {
           groups: [
             {
-              title: "Support",
+              title: "Hỗ trợ",
               href: "/category/support/",
               links: [
                 // TODO: trang gốc có mục "Đặt lịch tư vấn" mở popup (href="#") — chưa dựng, chờ BA xác nhận đích đến.
@@ -152,8 +152,9 @@ export const siteContent = {
       },
     ],
     navMoreLabel: "Thêm mục menu",
-    navOverflowFrom: 4,
-    navOverflowFromCompact: 4,
+    // Đủ chỗ cho cả 6 mục từ 1280px (đo 16/11/2026) — thêm mục menu thì đo lại, hạ số này nếu nav xuống dòng.
+    navOverflowFrom: 6,
+    navOverflowFromCompact: 6,
     scrollActions: [],
     secondaryAction: { label: "Tổng đài 1900 545 409", href: hotlineHref },
     primaryAction: { label: "Mở tài khoản", href: openAccountHref },

@@ -74,6 +74,9 @@ export function Header({
           </div>
           <HeaderPageAction primaryAction={primaryAction} />
         </div>
+        <div className="xl:hidden">
+          <HeaderPageAction primaryAction={primaryAction} size="sm" />
+        </div>
         <MobileNav
           items={nav}
           logoSrc={logoOnLightSrc}

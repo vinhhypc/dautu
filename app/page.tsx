@@ -26,7 +26,7 @@ export default async function HomeRoute() {
       {home.products && <HomeProducts content={home.products} labels={wpSectionLabels} />}
       {home.why && <HomeWhy content={home.why} labels={wpSectionLabels} />}
       {(home.testimonials || home.support) && (
-        <HomeVoices testimonials={home.testimonials} support={home.support} labels={wpSectionLabels} />
+        <HomeVoices testimonials={home.testimonials} support={home.support} supportActions={homePage.supportActions} labels={wpSectionLabels} />
       )}
       {home.rest.length > 0 && <WpSections title="" sections={home.rest} labels={wpSectionLabels} withPageTitle={false} />}
     </>

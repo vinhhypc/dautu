@@ -1,4 +1,6 @@
-import type { PageSeo } from "@/types/content";
+import type { LinkItem, PageSeo } from "@/types/content";
+
+import { hotlineHref } from "../links";
 
 /* Nội dung trang chủ lấy từ trang "/" trên WordPress; ở đây chỉ là giá trị dự phòng khi không đọc được WP. */
 export const homePage = {
@@ -9,4 +11,9 @@ export const homePage = {
     changeFrequency: "weekly",
     priority: 1,
   } satisfies PageSeo,
+  /* Thẻ "Cần hỗ trợ tư vấn?" trên WP chỉ có chữ, không có nút → thêm lối liên hệ ở Next. */
+  supportActions: [
+    { label: "Gọi 1900 545 409", href: hotlineHref },
+    { label: "Đăng ký tư vấn", href: "/dang-ky-tim-chuyen-gia/" },
+  ] satisfies LinkItem[],
 };

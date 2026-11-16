@@ -78,7 +78,8 @@ const desktopSpan: Record<number, string> = {
   12: "lg:col-span-12",
 };
 
-const INVERSE_TEXT = "text-text-inverse [&_:is(h1,h2,h3,h4,p,li,span,strong,figcaption,blockquote)]:text-text-inverse";
+const INVERSE_TEXT =
+  "text-text-inverse [&_:is(h1,h2,h3,h4,p,li,span,strong,figcaption,blockquote)]:text-text-inverse [&_.link-text]:text-text-inverse! [&_.link-text]:decoration-2";
 
 const toneOutline: Record<WpTone, string> = {
   brand: "border-2 border-brand-primary",
@@ -102,9 +103,10 @@ const ROW_SPAN: Record<number, string> = {
 };
 
 
+/* Chữ trắng trên cam brand chỉ đạt 3:1 (WCAG AA cần 4,5:1 cho đoạn văn) → khối nền cam của Elementor dùng nền cam nhạt, chữ đậm. */
 const toneSurface: Record<WpTone, string> = {
-  brand: cn("bg-brand-primary", INVERSE_TEXT),
-  accent: cn("bg-system-orange-primary", INVERSE_TEXT),
+  brand: "bg-brand-secondary",
+  accent: "bg-system-orange-secondary",
   purple: cn("bg-system-purple-primary", INVERSE_TEXT),
   muted: "bg-background-canvas",
   inverse: cn("bg-background-inverse", INVERSE_TEXT),
@@ -135,7 +137,8 @@ function ColumnsWidget({ widget, labels, centered }: ColumnsWidgetProps) {
         widget.elevated && "shadow-md",
       )}
     >
-      {columns.map((column, index) => {
+      {columns.map((rawColumn, index) => {
+        const column = isHeadingOnly(rawColumn.widgets) ? { ...rawColumn, tone: undefined, outline: undefined, elevated: undefined } : rawColumn;
         const surface = column.tone || column.outline || column.background || column.elevated;
         return (
           <div
@@ -189,14 +192,12 @@ function headingContent(widget: Extract<WpWidget, { type: "heading" }>): ReactNo
   );
 }
 
-function CardFace({ face, labels, inverse = false }: { face: WpCardFace; labels: WpSectionLabels; inverse?: boolean }) {
+function CardFace({ face, labels }: { face: WpCardFace; labels: WpSectionLabels }) {
   return (
     <>
       {face.image && <WpImage image={face.image} sizes="160px" className="max-h-64 w-auto self-start object-contain" />}
-      {face.title && (
-        <h3 className={cn("text-normal-xl font-semibold whitespace-pre-line", inverse ? "text-text-inverse" : "text-text-primary")}>{face.title}</h3>
-      )}
-      {face.body.length > 0 && <RichText blocks={face.body} labels={labels} wide className={cn("gap-8", inverse && "text-text-inverse")} />}
+      {face.title && <h3 className="text-normal-xl font-semibold whitespace-pre-line text-text-primary">{face.title}</h3>}
+      {face.body.length > 0 && <RichText blocks={face.body} labels={labels} wide className="gap-8" />}
     </>
   );
 }
@@ -228,27 +229,20 @@ function Run({ run, labels, isHero, maxColumns }: RunProps): ReactNode {
           ))}
         </div>
       );
+    /* Thẻ lật Elementor: nội dung mặt sau chỉ hiện khi rê chuột, mặt trước thường chỉ có logo → hiện cả hai mặt trong một thẻ. */
     case "flipCards":
       return (
         <div className={gridColumns(run.items.length, maxColumns)}>
           {run.items.map(({ front, back }, index) => (
-            <div
-              key={index}
-              tabIndex={back.link ? undefined : 0}
-              className="group relative flex min-h-240 flex-col overflow-hidden rounded-16 border border-border-subtle bg-background-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
-            >
-              <div className="flex flex-1 flex-col gap-12 p-24">
-                <CardFace face={front} labels={labels} />
-              </div>
-              <div className="flex flex-col gap-12 bg-brand-primary p-24 transition-opacity duration-200 ease-standard motion-reduce:transition-none pointer-fine:absolute pointer-fine:inset-0 pointer-fine:overflow-y-auto pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
-                <CardFace face={back} labels={labels} inverse />
-                {back.link && (
-                  <ButtonLink href={back.link.href} variant="neutral" trailingIcon="arrow-right" className="mt-auto self-start">
-                    {back.link.label || labels.flipHint}
-                  </ButtonLink>
-                )}
-              </div>
-            </div>
+            <Card key={index} className="hover-rise">
+              <CardFace face={front} labels={labels} />
+              <CardFace face={{ ...back, title: back.title === front.title ? undefined : back.title }} labels={labels} />
+              {back.link && (
+                <TextLink href={back.link.href} trailingIcon="arrow-right" className="mt-auto self-start">
+                  {back.link.label || labels.flipHint}
+                </TextLink>
+              )}
+            </Card>
           ))}
         </div>
       );
@@ -513,6 +507,10 @@ export function WpWidgetList({ widgets, labels }: { widgets: WpWidget[]; labels:
 /* Nền/viền đặt trên widget chỉ giữ cho khối chữ — ảnh/logo có nền màu trong Elementor thường là lớp trang trí. */
 const BOXABLE = new Set<WpWidget["type"]>(["richText", "heading", "iconList", "faq"]);
 
+/* Tiêu đề đứng một mình trong thanh màu trông như nút bấm → hiển thị như tiêu đề section thường. */
+const isHeadingOnly = (widgets: WpWidget[]) => widgets.length > 0 && widgets.every((widget) => widget.type === "heading");
+const isTitleOnly = (card: WpCardFace) => Boolean(card.title) && card.body.length === 0 && !card.image && !card.link;
+
 type RunsProps = {
   widgets: WpWidget[];
   headingId?: string;
@@ -535,7 +533,11 @@ function Runs({ widgets, headingId, labels, isHero = false, maxColumns = 4 }: Ru
     }
     const rendered = <Run key={index} run={run} labels={labels} isHero={isHero} maxColumns={maxColumns} />;
     const box =
-      run.kind === "single" && BOXABLE.has(run.widget.type) ? run.widget : run.kind === "cards" && run.items.length === 1 ? run.items[0] : undefined;
+      run.kind === "single" && BOXABLE.has(run.widget.type) && !isHeadingOnly([run.widget])
+        ? run.widget
+        : run.kind === "cards" && run.items.length === 1 && !isTitleOnly(run.items[0].card)
+          ? run.items[0]
+          : undefined;
     if (!box?.surface && !box?.outline) return rendered;
     return (
       <div
@@ -578,6 +580,9 @@ export function WpSections({ title, sections, labels, withPageTitle = true }: Wp
       {withTitle.map((section, index) => {
         const isHero = sectionContainsH1(section) || Boolean(section.tall) || (index === 0 && Boolean(section.background));
         const surface = section.tone ? toneSurface[section.tone] : "bg-background-base";
+        /* Hero một cột trên ảnh nền: lớp phủ chỉ che nửa trái, chữ rộng hết khung sẽ đè lên ảnh. */
+        const textOverImage =
+          isHero && Boolean(section.background) && !section.tone && !section.widgets.some((widget) => widget.type === "columns");
         return (
           <section
             key={section.id}
@@ -608,7 +613,10 @@ export function WpSections({ title, sections, labels, withPageTitle = true }: Wp
             {section.background && section.widgets.length === 0 && (
               <WpImage image={section.background} sizes="100vw" priority={index === 0} className="mx-auto w-full max-w-1920" />
             )}
-            <SectionContainer reveal={!isHero} className={cn("flex flex-col gap-24 md:gap-32", section.widgets.length === 0 && "hidden")}>
+            <SectionContainer
+              reveal={!isHero}
+              className={cn("flex flex-col gap-24 md:gap-32", section.widgets.length === 0 && "hidden", textOverImage && "md:*:max-w-560")}
+            >
               {section.outline ? (
                 <div
                   className={cn(

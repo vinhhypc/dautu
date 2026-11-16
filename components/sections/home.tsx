@@ -1,5 +1,5 @@
 import type { HomeContent } from "@/lib/wp/home";
-import type { WpSectionLabels } from "@/types/content";
+import type { LinkItem, WpSectionLabels } from "@/types/content";
 
 import { RevealChildren } from "../motion/reveal-children";
 import { ButtonLink } from "../ui/button";
@@ -123,10 +123,11 @@ export function HomeWhy({ content, labels }: HomeSectionProps<"why">) {
 type HomeVoicesProps = {
   testimonials?: HomeContent["testimonials"];
   support?: HomeContent["support"];
+  supportActions: LinkItem[];
   labels: WpSectionLabels;
 };
 
-export function HomeVoices({ testimonials, support, labels }: HomeVoicesProps) {
+export function HomeVoices({ testimonials, support, supportActions, labels }: HomeVoicesProps) {
   return (
     <section aria-labelledby="home-voices" className="relative isolate overflow-hidden bg-background-canvas py-48 md:py-64">
       {testimonials?.background && (
@@ -147,6 +148,13 @@ export function HomeVoices({ testimonials, support, labels }: HomeVoicesProps) {
           <Card padding="spacious" className="items-center text-center shadow-lg">
             {support.title && <h2 className="text-large-sm font-semibold text-text-primary uppercase">{support.title}</h2>}
             <RichText blocks={support.body} labels={labels} compact className="items-center" />
+            <div className="flex flex-wrap justify-center gap-12">
+              {supportActions.map((action, index) => (
+                <ButtonLink key={action.href} href={action.href} variant={index === 0 ? "primary" : "secondary"}>
+                  {action.label}
+                </ButtonLink>
+              ))}
+            </div>
           </Card>
         )}
       </RevealChildren>

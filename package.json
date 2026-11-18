@@ -11,6 +11,7 @@
     "start": "node scripts/with-local-ca.mjs next start",
     "lint": "eslint && pnpm check:images",
     "check:images": "node scripts/check-images.mjs",
+    "snapshot:wp": "node scripts/with-local-ca.mjs node scripts/snapshot-wp.mjs",
     "check:site": "node scripts/with-local-ca.mjs node scripts/check-site.mjs",
     "typecheck": "tsc --noEmit"
   },

@@ -14,6 +14,9 @@ const icons: Record<IconName, string> = {
   youtube: "icon-youtube",
   linkedin: "icon-linkedin",
   tiktok: "icon-tiktok",
+  shield: "icon-shield",
+  chart: "icon-chart",
+  send: "icon-send",
 };
 
 type IconProps = {

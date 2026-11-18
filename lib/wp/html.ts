@@ -286,8 +286,9 @@ function blockFor(element: Element): RichBlock[] {
     /* WordPress hay ghi width="10%" (icon trong đoạn văn) — giữ thành tỉ lệ thay vì bỏ qua. */
     const rawWidth = element.attribs.width ?? "";
     const scale = rawWidth.endsWith("%") ? Number(rawWidth.slice(0, -1)) / 100 : undefined;
-    const width = Number(rawWidth);
-    const height = Number(element.attribs.height);
+    /* Elementor/editor có khi ghi width="350px" — parseFloat nhận cả số có đuôi px. */
+    const width = scale ? Number.NaN : Number.parseFloat(rawWidth);
+    const height = Number.parseFloat(element.attribs.height ?? "");
     return [
       {
         type: "image",

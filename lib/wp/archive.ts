@@ -88,11 +88,21 @@ export async function getCategoryByPath(path: string): Promise<WpTerm | undefine
   return (await listCategories()).find((category) => category.path === target);
 }
 
+/* Bản chụp không có phản hồi (chưa từng được ghi lại) → như danh sách rỗng, không làm hỏng trang. */
+async function missingAsEmpty<T>(request: Promise<T[]>): Promise<T[]> {
+  try {
+    return await request;
+  } catch (error) {
+    if (error instanceof WpNotFoundError) return [];
+    throw error;
+  }
+}
+
 export async function getTagByPath(path: string): Promise<WpTerm | undefined> {
   const target = normalizePath(path);
   const slug = target.split("/").filter(Boolean).pop() ?? "";
-  const tags = await wpJson<WpTermResponse[]>(
-    `/wp-json/wp/v2/tags?slug=${encodeURIComponent(slug)}&_fields=id,name,count,link,yoast_head_json`,
+  const tags = await missingAsEmpty(
+    wpJson<WpTermResponse[]>(`/wp-json/wp/v2/tags?slug=${encodeURIComponent(slug)}&_fields=id,name,count,link,yoast_head_json`),
   );
   return tags.map((tag) => toTerm(tag, "tags")).find((tag) => tag.path === target);
 }
@@ -126,13 +136,13 @@ export async function listPosts(term: Pick<WpTerm, "id" | "taxonomy">, page: num
     _embed: "wp:featuredmedia",
     _fields: SUMMARY_FIELDS,
   });
-  const posts = await wpJson<WpPostResponse[]>(`/wp-json/wp/v2/posts?${params}`);
+  const posts = await missingAsEmpty(wpJson<WpPostResponse[]>(`/wp-json/wp/v2/posts?${params}`));
   return Promise.all(posts.map(toSummary));
 }
 
 export async function listLatestPosts(count: number): Promise<PostSummary[]> {
   const params = new URLSearchParams({ per_page: String(count), _embed: "wp:featuredmedia", _fields: SUMMARY_FIELDS });
-  const posts = await wpJson<WpPostResponse[]>(`/wp-json/wp/v2/posts?${params}`);
+  const posts = await missingAsEmpty(wpJson<WpPostResponse[]>(`/wp-json/wp/v2/posts?${params}`));
   return Promise.all(posts.map(toSummary));
 }
 
@@ -151,7 +161,7 @@ export async function searchPosts(query: string, page: number): Promise<PostSear
     return { items: await Promise.all(items.map(toSummary)), total, totalPages };
   } catch (error) {
     /* Từ khoá do người dùng nhập: tường lửa chặn (403, "Request Rejected") hoặc số trang vượt quá (400) đều coi như không có kết quả. */
-    if (error instanceof WpUnavailableError) return { items: [], total: 0, totalPages: 0 };
+    if (error instanceof WpUnavailableError || error instanceof WpNotFoundError) return { items: [], total: 0, totalPages: 0 };
     throw error;
   }
 }
@@ -205,8 +215,8 @@ async function findPost(path: string, slug: string): Promise<WpPostResponse | un
   try {
     /* WordPress lưu slug có dấu ở dạng tổ hợp (NFD) trong khi path đã chuẩn hoá NFC — thử cả hai. */
     for (const candidate of new Set([slug, slug.normalize("NFD")])) {
-      const posts = await wpJson<WpPostResponse[]>(
-        `/wp-json/wp/v2/posts?slug=${encodeURIComponent(candidate)}&_embed=wp:featuredmedia&_fields=${POST_FIELDS}`,
+      const posts = await missingAsEmpty(
+        wpJson<WpPostResponse[]>(`/wp-json/wp/v2/posts?slug=${encodeURIComponent(candidate)}&_embed=wp:featuredmedia&_fields=${POST_FIELDS}`),
       );
       const post = posts.find((item) => pathOf(item.link) === path);
       if (post) return post;

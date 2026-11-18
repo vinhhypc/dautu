@@ -72,20 +72,18 @@ function GroupTitle({ title, href }: Pick<NavMenuGroup, "title" | "href">) {
 
 type MegaMenuProps = NavMenu & {
   id: string;
+  className?: string;
 };
 
-export function MegaMenu({ id, groups, feature }: MegaMenuProps) {
+/* Khung rộng vừa số cột của menu (không giãn hết header) để không thừa khoảng trắng. */
+export function MegaMenu({ id, groups, feature, className }: MegaMenuProps) {
   const ctaHref = useHeaderHref(feature?.cta.href ?? "");
   return (
-    <div id={id} className="flex overflow-hidden rounded-b-8 bg-background-base text-text-primary shadow-soft">
+    <div id={id} className={cn("flex max-w-full overflow-hidden rounded-b-8 bg-background-base text-text-primary shadow-soft", className)}>
       {groups.map((group, index) => (
         <div
           key={group.title ?? group.links[0]?.label}
-          className={cn(
-            "flex min-w-0 flex-col py-32",
-            feature ? "flex-1" : "w-320 shrink-0",
-            index > 0 && "border-l border-border-default",
-          )}
+          className={cn("flex w-320 min-w-0 shrink flex-col py-32", index > 0 && "border-l border-border-default")}
         >
           <GroupTitle title={group.title} href={group.href} />
           <ul className={cn("flex flex-col", group.title && "mt-20")}>
@@ -107,7 +105,7 @@ export function MegaMenu({ id, groups, feature }: MegaMenuProps) {
         </div>
       ))}
       {feature && (
-        <m.div variants={menuItem} className="ml-auto flex w-400 shrink-0 flex-col gap-16 bg-background-surface p-24">
+        <m.div variants={menuItem} className="flex w-400 shrink-0 flex-col gap-16 bg-background-surface p-24">
           <MenuStage illustration={feature.illustration} />
           <p className="text-large-sm font-semibold">{feature.title}</p>
           <p className="text-normal-lg text-text-secondary">{feature.description}</p>

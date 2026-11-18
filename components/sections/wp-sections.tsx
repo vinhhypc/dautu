@@ -10,6 +10,7 @@ import {
   groupWidgets,
   flipCardBodies,
   isBannerSlides,
+  isFeatureRow,
   isLabelTile,
   isStepRow,
   masonryCards,
@@ -93,6 +94,7 @@ const toneOutline: Record<WpTone, string> = {
   brand: "border-2 border-brand-primary",
   accent: "border-2 border-system-orange-primary",
   purple: "border border-system-purple-primary",
+  green: "border border-system-green-primary",
   muted: "border border-border-default",
   inverse: "border-2 border-border-strong",
 };
@@ -116,6 +118,7 @@ const toneSurface: Record<WpTone, string> = {
   brand: "bg-brand-secondary",
   accent: "bg-system-orange-secondary",
   purple: cn("bg-system-purple-primary", INVERSE_TEXT),
+  green: "bg-system-green-secondary",
   muted: "bg-background-canvas",
   inverse: cn("bg-background-inverse", INVERSE_TEXT),
 };
@@ -162,6 +165,20 @@ function StepRow({ columns, labels }: { columns: WpColumn[]; labels: WpSectionLa
   );
 }
 
+/* Hàng 4 cột tiêu đề + mô tả, 2×2: thẻ nền xen kẽ, cột phải hạ so le; chữ căn trái cho dễ đọc. */
+const DENSE_CARD =
+  "rounded-16 p-24 md:p-32 md:even:translate-y-48 [&_.items-center]:items-start [&_.text-center]:text-left";
+
+/* Một cột (mobile): xen kẽ theo thứ tự; lưới 2×2: xen kẽ kiểu bàn cờ để hai thẻ cạnh nhau luôn khác màu. */
+function denseCardTone(index: number) {
+  const stacked = index % 2 === 0;
+  const checkered = (index + Math.floor(index / 2)) % 2 === 0;
+  return cn(
+    stacked ? "bg-brand-secondary" : "bg-background-canvas",
+    stacked !== checkered && (checkered ? "md:bg-brand-secondary" : "md:bg-background-canvas"),
+  );
+}
+
 function ColumnsWidget({ widget, labels, centered }: ColumnsWidgetProps) {
   const { columns } = widget;
   if (isStepRow(columns)) return <StepRow columns={columns} labels={labels} />;
@@ -170,12 +187,14 @@ function ColumnsWidget({ widget, labels, centered }: ColumnsWidgetProps) {
   const subgrid = cardRows(columns);
   const stretched = columns.some((column) => column.tone || column.outline || column.elevated);
   const leadingTile = columns.length > 1 && columns[0].span === 1 && isLabelTile(columns[0]);
+  const dense = isFeatureRow(columns);
   return (
     <div
       className={cn(
         "grid gap-24 md:grid-cols-12 lg:gap-32",
         leadingTile && "lg:grid-cols-[auto_repeat(11,minmax(0,1fr))]",
-        stretched ? "items-stretch" : centered ? "items-center" : "items-start",
+        dense && "md:pb-48",
+        stretched || dense ? "items-stretch" : centered ? "items-center" : "items-start",
         (widget.surface || widget.outline || widget.elevated) && "rounded-16 p-24 md:p-32",
         widget.surface && toneSurface[widget.surface],
         widget.outline && toneOutline[widget.outline],
@@ -194,7 +213,7 @@ function ColumnsWidget({ widget, labels, centered }: ColumnsWidgetProps) {
               "relative isolate flex min-w-0 flex-col gap-16",
               centered && "md:justify-center",
               tabletSpan(column.span),
-              desktopSpan[column.span],
+              dense ? cn("lg:col-span-6", DENSE_CARD, denseCardTone(index)) : desktopSpan[column.span],
               column.align === "center" && "items-center text-center",
               column.span <= 4 && "[&_h2]:text-normal-xl [&_h3]:text-normal-lg",
               stretched && !surface && "[&>:last-child:is(h2,h3,h4)]:mt-auto",
@@ -241,10 +260,23 @@ function headingContent(widget: Extract<WpWidget, { type: "heading" }>): ReactNo
   );
 }
 
-function CardFace({ face, labels }: { face: WpCardFace; labels: WpSectionLabels }) {
+type CardFaceProps = { face: WpCardFace; labels: WpSectionLabels; centered?: boolean; imageWidth?: number };
+
+/* Ảnh image-box theo độ rộng Elementor đặt (% của thẻ: ảnh minh hoạ ~60%, logo ~30%); không đặt thì coi là logo nhỏ. */
+function CardFace({ face, labels, centered = false, imageWidth }: CardFaceProps) {
   return (
     <>
-      {face.image && <WpImage image={face.image} sizes="160px" className="max-h-64 w-auto max-w-full self-start object-contain" />}
+      {face.image && (
+        <WpImage
+          image={face.image}
+          sizes={imageWidth ? "320px" : "160px"}
+          className={cn(
+            "object-contain",
+            imageWidth ? cn(widthFractionClass(imageWidth), "max-h-160") : "max-h-64 w-auto max-w-full",
+            centered ? "self-center" : "self-start",
+          )}
+        />
+      )}
       {face.title && <h3 className="text-normal-xl font-semibold whitespace-pre-line text-text-primary">{face.title}</h3>}
       {face.body.length > 0 && <RichText blocks={face.body} labels={labels} wide className="gap-8" />}
     </>
@@ -262,10 +294,10 @@ function CardOverlayLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function WpCard({ item: { card, align }, labels, className }: { item: Extract<WpWidget, { type: "card" }>; labels: WpSectionLabels; className?: string }) {
+function WpCard({ item: { card, align, width }, labels, className }: { item: Extract<WpWidget, { type: "card" }>; labels: WpSectionLabels; className?: string }) {
   return (
     <Card className={cn("hover-rise", align === "center" && "items-center text-center", card.link && LINKED_CARD, className)}>
-      <CardFace face={card} labels={labels} />
+      <CardFace face={card} labels={labels} centered={align === "center"} imageWidth={width} />
       {card.link && <CardOverlayLink href={card.link.href} label={linkInContext(card.link.label, card.title) ?? card.link.label} />}
     </Card>
   );
@@ -307,10 +339,10 @@ function Run({ run, labels, isHero, maxColumns }: RunProps): ReactNode {
   switch (run.kind) {
     case "cards":
       if (run.items.length === 1 && !run.items[0].card.link) {
-        const { card, align } = run.items[0];
+        const { card, align, width } = run.items[0];
         return (
           <div className={cn("flex flex-col gap-12", align === "center" && "items-center text-center")}>
-            <CardFace face={card} labels={labels} />
+            <CardFace face={card} labels={labels} centered={align === "center"} imageWidth={width} />
           </div>
         );
       }
@@ -518,7 +550,13 @@ function SingleWidget({ widget, labels }: { widget: WpWidget; labels: WpSectionL
           items={widget.items.map((item, index) => ({
             id: `tab-${index}`,
             label: item.title,
-            content: <RichText blocks={item.body} labels={labels} />,
+            content: (
+              <RichText
+                blocks={item.body}
+                labels={labels}
+                className={cn(item.body.length === 1 && item.body[0].type === "image" && "items-center")}
+              />
+            ),
           }))}
         />
       );

@@ -2,9 +2,11 @@ import { linkInContext } from "@/lib/a11y";
 import type { HomeContent } from "@/lib/wp/home";
 import type { LinkItem, WpSectionLabels } from "@/types/content";
 
+import { RevealGroup, RevealItem } from "../motion/reveal";
 import { RevealChildren } from "../motion/reveal-children";
 import { ButtonLink } from "../ui/button";
 import { Card } from "../ui/card";
+import { Icon } from "../ui/icon";
 import { StepSlider } from "../ui/step-slider";
 import { TextLink } from "../ui/text-link";
 import { WpImage } from "../ui/wp-image";
@@ -67,6 +69,13 @@ export function HomeChallenges({ content, labels }: HomeSectionProps<"challenges
   );
 }
 
+const PRODUCT_CARD =
+  "group hover-rise w-full items-center border-2 border-transparent text-center shadow-md hover:border-brand-primary";
+const PRODUCT_ICON_RING =
+  "flex size-64 items-center justify-center rounded-1000 bg-brand-secondary text-brand-primary transition-[transform,background-color,color] duration-[var(--duration)] group-hover:scale-110 group-hover:bg-brand-primary group-hover:text-text-inverse motion-reduce:transition-none motion-reduce:group-hover:scale-100";
+const PRODUCT_LINK =
+  "mt-auto [&_.icon-arrow-right]:transition-transform [&_.icon-arrow-right]:duration-[var(--duration)] group-hover:[&_.icon-arrow-right]:translate-x-4 motion-reduce:group-hover:[&_.icon-arrow-right]:translate-x-0";
+
 export function HomeProducts({ content, labels }: HomeSectionProps<"products">) {
   return (
     <section aria-labelledby="home-products" className="relative isolate overflow-hidden bg-background-canvas py-48 md:py-64">
@@ -79,24 +88,31 @@ export function HomeProducts({ content, labels }: HomeSectionProps<"products">) 
             {content.title}
           </h2>
         )}
-        <div className="grid gap-16 md:grid-cols-3 md:gap-24">
+        <RevealGroup stagger="slow" className="grid gap-16 md:grid-cols-3 md:gap-24">
           {content.cards.map(({ front, back }, index) => (
-            <Card key={index} padding="spacious" className="hover-rise items-center text-center shadow-md">
-              {front.title && <h3 className="text-normal-xl font-semibold text-text-primary">{front.title}</h3>}
-              <RichText blocks={front.body} labels={labels} compact className="items-center" />
-              {back.link && (
-                <TextLink
-                  href={back.link.href}
-                  trailingIcon="arrow-right"
-                  ariaLabel={linkInContext(labels.flipHint, front.title)}
-                  className="mt-auto"
-                >
-                  {labels.flipHint}
-                </TextLink>
-              )}
-            </Card>
+            <RevealItem key={index} className="flex">
+              <Card padding="spacious" className={PRODUCT_CARD}>
+                {front.icon && (
+                  <span className={PRODUCT_ICON_RING}>
+                    <Icon name={front.icon} className="size-32" />
+                  </span>
+                )}
+                {front.title && <h3 className="text-normal-xl font-semibold text-text-primary">{front.title}</h3>}
+                <RichText blocks={front.body} labels={labels} compact className="items-center" />
+                {back.link && (
+                  <TextLink
+                    href={back.link.href}
+                    trailingIcon="arrow-right"
+                    ariaLabel={linkInContext(labels.flipHint, front.title)}
+                    className={PRODUCT_LINK}
+                  >
+                    {labels.flipHint}
+                  </TextLink>
+                )}
+              </Card>
+            </RevealItem>
           ))}
-        </div>
+        </RevealGroup>
       </RevealChildren>
     </section>
   );

@@ -7,6 +7,8 @@ const THIRTY_DAYS = 60 * 60 * 24 * 30;
 const STATIC_ASSET_CACHE = `public, max-age=${THIRTY_DAYS}, stale-while-revalidate=${THIRTY_DAYS}`;
 
 const nextConfig: NextConfig = {
+  /* Bản chụp nội dung WordPress đọc bằng fs lúc chạy — đưa vào bản triển khai nếu đóng gói theo vết import. */
+  outputFileTracingIncludes: { "/*": ["./data/wp/**/*"] },
   poweredByHeader: false,
   /* URL của WordPress đều có "/" cuối — giữ nguyên để link cũ và canonical khớp. */
   trailingSlash: true,

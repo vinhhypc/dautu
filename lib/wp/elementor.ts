@@ -1,7 +1,7 @@
 import { type ChildNode, type Element, isTag } from "domhandler";
 import { findAll, findOne, getOuterHTML, textContent } from "domutils";
 
-import type { LinkItem, RichBlock, WpCardFace, WpColumn, WpImage, WpPanel, WpSection, WpTone, WpWidget, WpWidgetStyle } from "@/types/content";
+import type { IconName, LinkItem, RichBlock, WpCardFace, WpColumn, WpImage, WpPanel, WpSection, WpTone, WpWidget, WpWidgetStyle } from "@/types/content";
 
 import { DEFAULT_HEADING_STYLE, type ElementorStyles, textToneOf, toneOf } from "./elementor-styles";
 import { imageSrc, lazySrc, nodesToBlocks, normalizeHref, parseHtml } from "./html";
@@ -106,11 +106,24 @@ function headingLevel(element: Element | undefined): 1 | 2 | 3 | 4 {
   return level === 1 || level === 2 || level === 3 ? level : 4;
 }
 
+/* Icon Font Awesome của Elementor → icon của dự án; icon không có trong bảng thì bỏ qua. */
+const FONT_AWESOME_ICONS: Record<string, IconName> = {
+  "fa-shield-alt": "shield",
+  "fa-chart-bar": "chart",
+  "fa-paper-plane": "send",
+};
+
+function fontAwesomeIcon(root: Element | undefined): IconName | undefined {
+  const icon = root && findOne((node) => node.name === "i" && /\bfa-/.test(node.attribs.class ?? ""), root.children, true);
+  return icon ? classes(icon).map((name) => FONT_AWESOME_ICONS[name]).find(Boolean) : undefined;
+}
+
 function face(root: Element | undefined, titleClass: string, bodyClass: string): WpCardFace {
   return {
     title: lines(first(root, titleClass)) || undefined,
     body: blocks(first(root, bodyClass)),
     image: image(root),
+    icon: fontAwesomeIcon(root),
   };
 }
 
@@ -299,7 +312,8 @@ const NARROW_MARGIN_PX = 240;
 /* Viền có màu → giữ khung (màu thương hiệu hoặc viền nhạt); viền trắng/không rõ màu bỏ qua. */
 function outlineOf(color: string | undefined): WpTone | undefined {
   if (!color) return undefined;
-  if (textToneOf(color) === "purple") return "purple";
+  const textTone = textToneOf(color);
+  if (textTone === "purple" || textTone === "green") return textTone;
   const tone = toneOf(color);
   if (tone === "brand" || tone === "accent") return tone;
   return tone === "muted" ? undefined : "muted";

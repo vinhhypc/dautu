@@ -14,6 +14,9 @@ export type IconName =
   | "menu"
   | "more"
   | "close"
+  | "shield"
+  | "chart"
+  | "send"
   | SocialIconName;
 
 export type IconButtonVariant = "neutral" | "plain";
@@ -480,6 +483,7 @@ export type WpCardFace = {
   body: RichBlock[];
   image?: WpImage;
   link?: LinkItem;
+  icon?: IconName;
 };
 
 export type WpPanel = {
@@ -509,7 +513,7 @@ export type WpPostCard = {
 };
 
 export type WpAlign = "left" | "center" | "right";
-export type WpTone = "brand" | "accent" | "purple" | "muted" | "inverse";
+export type WpTone = "brand" | "accent" | "purple" | "green" | "muted" | "inverse";
 
 export type WpColumn = {
   span: number;

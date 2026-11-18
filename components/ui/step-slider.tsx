@@ -15,6 +15,8 @@ export type StepSlide = {
 };
 
 const DEFAULT_DURATION_MS = 6000;
+/* Từ 7 bước trở lên, một hàng làm mỗi bước còn ~95px và cắt nhãn → chia hàng 5 bước. */
+const MAX_STEPS_PER_ROW = 5;
 
 type StepSliderProps = {
   slides: StepSlide[];
@@ -32,7 +34,9 @@ type StepNavProps = {
   select: (index: number) => void;
 };
 
-function StepButton({ slide, index, isActive, onSelect, panelId }: { slide: StepSlide; index: number; isActive: boolean; onSelect: () => void; panelId: string }) {
+type StepButtonProps = { slide: StepSlide; index: number; isActive: boolean; onSelect: () => void; panelId: string; fullLabel?: boolean };
+
+function StepButton({ slide, index, isActive, onSelect, panelId, fullLabel = false }: StepButtonProps) {
   return (
     <button
       type="button"
@@ -46,7 +50,7 @@ function StepButton({ slide, index, isActive, onSelect, panelId }: { slide: Step
     >
       <StepTrack isActive={isActive} className="inset-x-0" />
       <span className="text-normal-lg font-medium">{padStep(index)}</span>
-      {slide.label && <span className="line-clamp-2 text-normal-md font-medium md:text-normal-lg">{slide.label}</span>}
+      {slide.label && <span className={cn("text-normal-md font-medium md:text-normal-lg", !fullLabel && "line-clamp-2")}>{slide.label}</span>}
     </button>
   );
 }
@@ -55,20 +59,35 @@ function StepButton({ slide, index, isActive, onSelect, panelId }: { slide: Step
 function StepNav({ id, slides, active, select }: StepNavProps) {
   const { listRef, onScroll } = useStepStrip<HTMLOListElement>(active, select);
   const panelId = (index: number) => `${id}-panel-${index}`;
+  const wrapped = slides.length > MAX_STEPS_PER_ROW + 1;
 
   return (
     <>
-      <ol className="hidden gap-24 md:flex">
+      <ol className={cn("hidden gap-24 md:flex", wrapped && "md:grid md:grid-cols-5 md:gap-y-24")}>
         {slides.map((slide, index) => (
           <li key={index} className="flex min-w-0 flex-1">
-            <StepButton slide={slide} index={index} isActive={index === active} onSelect={() => select(index)} panelId={panelId(index)} />
+            <StepButton
+              slide={slide}
+              index={index}
+              isActive={index === active}
+              onSelect={() => select(index)}
+              panelId={panelId(index)}
+              fullLabel={wrapped}
+            />
           </li>
         ))}
       </ol>
       <ol ref={listRef} onScroll={onScroll} className="flex snap-x snap-mandatory gap-16 overflow-x-auto [scrollbar-width:none] md:hidden">
         {slides.map((slide, index) => (
           <li key={index} className={cn("flex shrink-0 snap-start", slide.label ? "w-200" : "w-64")}>
-            <StepButton slide={slide} index={index} isActive={index === active} onSelect={() => select(index)} panelId={panelId(index)} />
+            <StepButton
+              slide={slide}
+              index={index}
+              isActive={index === active}
+              onSelect={() => select(index)}
+              panelId={panelId(index)}
+              fullLabel={wrapped}
+            />
           </li>
         ))}
       </ol>

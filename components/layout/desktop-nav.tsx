@@ -5,6 +5,7 @@ import * as m from "motion/react-m";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { useAnchoredPanel } from "@/hooks/use-anchored-panel";
 import { useDismiss } from "@/hooks/use-dismiss";
 import { useOpenHref } from "@/hooks/use-open-href";
 import { cn } from "@/lib/cn";
@@ -44,6 +45,7 @@ export function DesktopNav({
   const navRef = useDismiss<HTMLElement>(openKey !== null, close);
   const openIndex = items.findIndex((item) => item.label === openKey);
   const openMenu = items[openIndex]?.menu;
+  const panelWrapperRef = useAnchoredPanel<HTMLDivElement>(openMenu ? panelId(openIndex) : undefined);
   const overflowItems = items.slice(overflowFrom);
   const isOverflowSelected = (item: NavItem) => openKey === item.label || item.href === pathname;
   const isMoreActive = isMoreOpen || overflowItems.some(isOverflowSelected);
@@ -115,9 +117,10 @@ export function DesktopNav({
             initial="closed"
             animate="open"
             exit="closed"
-            className="absolute inset-x-0 top-full mx-auto max-w-1440"
+            ref={panelWrapperRef}
+            className="pointer-events-none absolute inset-x-0 top-full mx-auto max-w-1440"
           >
-            <MegaMenu id={panelId(openIndex)} {...openMenu} />
+            <MegaMenu id={panelId(openIndex)} {...openMenu} className="pointer-events-auto relative left-(--anchor-left) w-fit" />
           </m.div>
         )}
       </AnimatePresence>

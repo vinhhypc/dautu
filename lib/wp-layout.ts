@@ -56,6 +56,41 @@ export function masonryCards(columns: WpColumn[]): MasonryItem[] | undefined {
   return cards.length === items.length && cards.length > columns.length ? cards : undefined;
 }
 
+function widgetText(widget: WpWidget): string {
+  switch (widget.type) {
+    case "heading":
+      return widget.text;
+    case "richText":
+      return richTextToPlain(widget.blocks);
+    case "card":
+      return `${widget.card.title ?? ""} ${richTextToPlain(widget.card.body)}`;
+    case "iconList":
+      return widget.items.map((item) => item.text).join(" ");
+    default:
+      return "";
+  }
+}
+
+const FEATURE_ROW_COLUMNS = 4;
+const FEATURE_MIN_CHARS = 40;
+
+const isTextOnly = (widget: WpWidget) =>
+  widget.type === "heading" ||
+  widget.type === "richText" ||
+  widget.type === "iconList" ||
+  (widget.type === "card" && !widget.card.image && !widget.card.link);
+
+/* Hàng 4 cột "tiêu đề + mô tả" (ưu điểm, lý do…): 4 cột hẹp trên màn hình lớn làm chữ dồn dọc → thẻ xếp lưới 2×2. */
+export function isFeatureRow(columns: WpColumn[]): boolean {
+  if (columns.length !== FEATURE_ROW_COLUMNS || columns.some((column) => column.background || column.elevated)) return false;
+  return columns.every(
+    (column) =>
+      column.widgets.length > 0 &&
+      column.widgets.every(isTextOnly) &&
+      column.widgets.map(widgetText).join(" ").trim().length >= FEATURE_MIN_CHARS,
+  );
+}
+
 const STEP_PREFIX = /^(bước|step)\s*(\d+)/i;
 
 function stepText(widget: WpWidget): string | undefined {

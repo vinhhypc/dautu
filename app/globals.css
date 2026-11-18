@@ -80,6 +80,15 @@
 @utility icon-tiktok {
   mask-image: url("/icons/tiktok.svg");
 }
+@utility icon-shield {
+  mask-image: url("/icons/shield.svg");
+}
+@utility icon-chart {
+  mask-image: url("/icons/chart.svg");
+}
+@utility icon-send {
+  mask-image: url("/icons/send.svg");
+}
 
 @utility interactive-lift {
   transition-property: transform, box-shadow, background-color, color, border-color;

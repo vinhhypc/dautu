@@ -49,6 +49,8 @@ function rules(css: string): Rule[] {
 }
 
 const ELEMENT_ID = /elementor-element-([a-f0-9]+)/g;
+/* Ảnh widget image, ảnh trong image-box (".elementor-image-box-img", bản cũ ".elementor-image-box-wrapper .elementor-image"). */
+const IMAGE_TAIL = /(\bimg|image-box-img|image-box-wrapper \.elementor-image)$/;
 
 /* Màu mặc định của mọi tiêu đề Elementor (thường là màu primary của Kit) — áp cho tiêu đề không tự đặt màu. */
 const DEFAULT_HEADING_SELECTOR = ".elementor-widget-heading .elementor-heading-title";
@@ -117,7 +119,7 @@ export function parseElementorStyles(css: string, globals: Map<string, string> =
       update(styles, id, {
         align: (align === "left" || align === "center" || align === "right") && !/icon-list|tab|toggle|accordion/.test(tail) ? align : undefined,
         columnWidth: tail === "" && width ? width : undefined,
-        imageWidth: /\bimg$/.test(tail) && (width || maxWidth) ? Math.min(width ?? 1, maxWidth ?? 1) : undefined,
+        imageWidth: IMAGE_TAIL.test(tail) && (width || maxWidth) ? Math.min(width ?? 1, maxWidth ?? 1) : undefined,
         color: color?.startsWith("#") && (targetsElement || tail.includes("heading-title")) ? color : undefined,
         background: background?.startsWith("#") && !tail.includes("button") && !isOverlay && !isIcon ? background : undefined,
         border:

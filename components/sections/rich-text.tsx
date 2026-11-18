@@ -245,7 +245,7 @@ function Block({ block, compact, wide, labels }: BlockProps): ReactNode {
     }
     case "video":
       return (
-        <div className="relative aspect-video w-full max-w-720 overflow-hidden rounded-12 bg-background-inverse">
+        <div className="relative mx-auto aspect-video w-full max-w-720 overflow-hidden rounded-12 bg-background-inverse">
           <iframe
             src={block.src}
             title={block.title}

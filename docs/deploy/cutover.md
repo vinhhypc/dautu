@@ -25,6 +25,19 @@ Cả ba biến địa chỉ và cờ `NEXT_PUBLIC_SITE_NOINDEX` được đọc 
 
 Nếu `WP_ORIGIN` trùng `NEXT_PUBLIC_SITE_URL` thì proxy `/wp-content/uploads/*` tự tắt (tránh gọi vòng) — file PDF cũ sẽ 404. Trước cutover luôn phải khác nhau.
 
+## 1b. Build không gọi được WordPress (Cloudflare 429/chặn)
+
+Lỗi kiểu `Cloudflare chặn request tới …/wp-json/… (HTTP 429)` lúc `pnpm build` nghĩa là IP máy build bị giới hạn tốc độ. Không cần đổi hạ tầng: dùng bản chụp nội dung đã lưu trong repo (`data/wp/`).
+
+```bash
+WP_SOURCE=snapshot pnpm build     # không gọi WordPress
+WP_SOURCE=snapshot pnpm start     # trang vẫn render từ bản chụp
+```
+
+- Nội dung chỉ đổi khi chụp lại: trên máy truy cập được WordPress chạy `pnpm snapshot:wp` (có throttle và tự thử lại khi 429, mất vài phút), commit `data/wp`, rồi build lại.
+- Với `WP_SOURCE=live` (mặc định) site vẫn gọi WordPress và chỉ dùng bản chụp khi WordPress không trả lời được.
+- Tìm kiếm `/tim-kiem/` và link ngắn `/?p=` cần WordPress sống; ở chế độ `snapshot` tìm kiếm trả "không tìm thấy", `/?p=` không chuyển hướng.
+
 ## 2. Chuẩn bị WordPress ở domain CMS
 
 1. Dựng WordPress ở domain CMS (bản sao hoặc di chuyển), Settings → Site Address trỏ về domain CMS.
